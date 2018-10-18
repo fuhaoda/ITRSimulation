@@ -1,146 +1,103 @@
 import pandas as pd
 import numpy as np
+from functools import partial
+
+class DataGenerator:
+    """Generate data for ITR.
+
+    Attributes:
+        m_cont: Method used to generate continuous covariate
+        m_ord:  Method used to generate ordinal covariate
+        m_nom:  Method used to generate nominal covariate
+        m_act:  Method used to generate action 
+        m_resp: Method used to generate response variable
+    """
+    
+    def __init__(self, seed, 
+                 m_cont = partial(np.random.uniform(0, 1)),
+                 m_ord = partial(np.random.randint(0, 4)),
+                 m_nom = partial(np.random.randint(0, 4)),
+                 m_act = partial(np.random.randint(0, 2)),
+                 m_resp = partial(np.random.uniform(0, 1))):
+        np.random.seed(seed) 
+        self.m_cont = m_cont
+        self.m_ord = m_ord
+        self.m_nom = m_nom
+        self.m_act = m_act
+        self.m_resp = m_resp
+
+    def generate(self, var_type, sample_size): 
+        """Generate samples of the specified type
+        
+        Parameters:
+            var_type (str): Type of the variable 
+            sample_size (int): Number of samples to generate
+
+        Returns: 
+            An array of samples drawn the specified underlying distribution
+        """
+        if (var_type == 'cont'):
+            return self.m_cont(sample_size)
+        elif (var_type == 'ord'):
+            return self.m_ord(sample_size)
+        elif (var_type == 'nom'):
+            return self.m_nom(sample_size)
+        elif (var_type == 'act'):
+            return self.m_act(sample_size)
+        else:
+            return self.m_resp(sample_size)
+        
 
 class ITRDataTable:
-    def __init__(self, sample_size, nb_continuous, nb_ordinal,
-                 nb_nominal, nb_response) :
+    """A data table of covariates, actions, and responses for ITR. 
+
+    Attributes:
+        sample_size: Number of samples 
+        n_cont: Number of continuous variables 
+        n_ord:  Number of ordinal variables
+        n_nom:  Number of nominal variables 
+        n_resp: Number of responses 
+        df:     Data frame holding the content of the table
+    """
+
+    def __init__(self, sample_size, n_cont, n_ord, n_nom, n_resp):
         self.sample_size = sample_size
-        self.nb_continuous = nb_continuous
-        self.nb_ordinal = nb_ordinal
-        self.nb_nominal = nb_nominal
-        self.nb_response = nb_response
+        self.n_cont = n_cont
+        self.n_ord = n_ord
+        self.n_nom = n_nom
+        self.n_resp = n_resp
         self.df = pd.DataFrame()
 
-    def set_continuous(self, generator):
-        for i in range(self.nb_continuous):
-            col_name = 'Cont' + str(i)
-            self.df[col_name] = generator.continous_engine(self.sample_size)
 
-    def set_ordinal(self, generator):
-        for i in range(self.nb_ordinal):
-            col_name = 'Ord' + str(i)
-            self.df[col_name] = generator.ordinal_engine(self.sample_size)
+    def generate(self, table_type, engine):
+        """Generate data using the provided data generator
 
-    def set_nominal(self, generator):
-        for i in range(self.nb_nominal):
-            col_name = 'Nom' + str(i)
-            self.df[col_name] = generator.nominal_engine(self.sample_size)
+        Parameters:
+            table_type (str): Type of the table, either 'training' or 'testing'
+            engine (DataGenerator): Generator for the data
 
-    def set_action(self, generator):
-        self.df['A'] = generator.action_engine(self.sample_size)
+        Returns:
+            None
+        """ 
+    
+        for i in range(self.n_cont):
+            self.df['Cont' + str(i)] = engine.generate('cont', self.sample_size)
 
-    def set_training_response(self, generator):
-        for i in range(self.nb_response):
-            col_name = 'Y' + str(i)
-            self.df[col_name] = generator.response_engine(self.sample_size)
+        for i in range(self.n_ord):
+            self.df['Ord' + str(i)] = engine.generate('ord', self.sample_size)
 
-    def set_testing_response(self, generator):
-        pass
+        for i in range(self.n_nom):
+            self.df['Nom' + str(i)] = engine.generate('nom', self.sample_size)
 
-    def export(self, fname):
-        self.df.index.name = 'ID'
-        self.df.to_csv(fname)
+        self.df['A'] = engine.generate('act', self.sample_size)
+
+        if table_type == 'training':
+            for i in range(self.n_resp):
+                self.df['Y' + str(i)] = engine.generate('resp', self.sample_size)
+        else:
+            pass
+
         
-
-class SimulationEngine:
-    def __init__(self, **args):
-        # Default values
-        training_size = 5
-        testing_size = 10
-        nb_continuous = 1
-        nb_ordinal = 1
-        nb_nominal = 1
-        nb_response = 1
-
-        for k, v in args.items():
-            if k == 'seed':
-                random.seed(v)
-            if k == 'training_size':
-                training_size = v
-            if k == 'testing_size':
-                testing_size = v
-            if k == 'nb_continuous':
-                nb_continuous = v
-            if k == 'nb_ordinal':
-                nb_ordinal = v
-            if k == 'nb_nominal':
-                nb_nominal = v
-            if k == 'nb_response':
-                nb_response = v
-
-            self.training_data = ITRDataTable(training_size, nb_continuous, 
-                                              nb_ordinal, nb_nominal, nb_response)
-
-    def generate(self, generator):
-        self.training_data.set_continus(generator)
-        self.training_data.set_ordinal(generator)
-        self.training_data.set_nominal(generator)
-        self.training_data.set_action(generator)
-        self.training_data.set_training_response(generator)
-
-        self.testing_data.set_continuous(generator)
-        self.testing_data.set_ordinal(generator)
-        self.testing_data.set_nominal(generator)
-        self.testing_data.set_action(generator)
-        self.testing_data.set_testing_response(generator)
-
-    def export(self, dataset_id):
-        self.training_data.export("train" + str(dataset_id) + ".csv")
-        self.testing_data.export("test" + str(dataset_id) + ".csv")
-        
-        
-                                              
-        
-
-
-
-# import random
-# import csv
-
-
-
-# class ITRDataTable:
-#     def __init__(self, sample_size, nb_continuous, nb_ordinal,
-#                  nb_nominal, nb_response) :
-#         self.continuous = [[0] * nb_continuous for _ in range(sample_size)]
-#         self.ordinal = [[0] * nb_ordinal for _ in range(sample_size)]
-#         self.nominal = [[0] * nb_nominal for _ in range(sample_size)]
-#         self.action = [0] * sample_size
-#         self.response = [[0] * nb_response for _ in range(sample_size)]
-
-#     def set_continuous(self, generator):
-#         sample_size = len(self.continuous)
-#         nb_continuous = len(self.continuous[0])
-#         for i in range(sample_size):
-#             for j in range(nb_continuous):
-#                 self.continuous[i][j] = generator()
-
-#     def set_ordinal(self, generator):
-#         sample_size = len(self.ordinal)
-#         nb_ordinal = len(self.ordinal[0])
-#         for i in range(sample_size):
-#             for j in range(nb_ordinal):
-#                 self.ordinal[i][j] = generator()
-                
-#     def set_nominal(self, generator):
-#         sample_size = len(self.nominal)
-#         nb_nominal = len(self.nominal[0])
-#         for i in range(sample_size):
-#             for j in range(nb_nominal):
-#                 self.nominal[i][j] = generator()
-
-#     def set_action(self, generator):
-#         sample_size = len(self.action)
-#         for i in range(sample_size):
-#             self.action[i] = generator()
-
-#     def set_training_response(self, generator):
-#         sample_size = len(self.response)
-#         nb_response = len(self.response[0])
-#         for i in range(sample_size):
-#             for j in range(nb_response):
-#                 self.response[i][j] = generator()
-
 #     def set_testing_response(self, generator):
 #         trts = {}
 #         iter = 0
@@ -165,107 +122,63 @@ class SimulationEngine:
 #             i = trts[self.action[j]] 
 #             for k in range(nb_response):
 #                 self.response[j][k] = counterfactuals[i][j][k]
-            
-#     def export(self, fname):
-#         sample_size = len(self.continuous)
-#         nb_continuous = len(self.continuous[0])
-#         nb_ordinal = len(self.ordinal[0])
-#         nb_nominal = len(self.nominal[0])
-#         nb_resp = len(self.response[0])
-
-#         print(fname)
-#         with open(fname, 'w', newline = '') as csvfile:
-#             writer = csv.writer(csvfile, delimiter = ',')
-
-#             # Write header to the file 
-#             row = ['ID']
-#             for i in range(nb_continuous):
-#                 row.append('Cont' + str(i + 1))
-
-#             for i in range(nb_ordinal):
-#                 row.append('Ord' + str(i + 1))
-
-#             for i in range(nb_nominal):
-#                 row.append('Nom' + str(i + 1))
-
-#             row.append('A')
-
-#             for i in range(nb_resp):
-#                 row.append('Y' + str(i + 1))
-
-#             writer.writerow(row)
-
-#             # Write data to the file 
-#             for i in range(sample_size):
-#                 row = [str(i + 1)]
-
-#                 for j in range(nb_continuous):
-#                     row.append(str(self.continuous[i][j]))
-
-#                 for j in range(nb_ordinal):
-#                     row.append(str(self.ordinal[i][j]))
-
-#                 for j in range(nb_nominal):
-#                     row.append(str(self.nominal[i][j]))
-
-#                 row.append(str(self.action[i]))
-
-#                 for j in range(nb_resp):
-#                     row.append(str(self.response[i][j]))
-
-#                 writer.writerow(row)
-
-# class SimulationEngine:
-#     def __init__(self, **args):
-#         # Default values
-#         training_size = 5
-#         testing_size = 10
-#         nb_continuous = 1
-#         nb_ordinal = 1
-#         nb_nominal = 1
-#         nb_response = 1
-
-#         for k, v in args.items():
-#             if k == 'seed':
-#                 random.seed(v)
-#             if k == 'training_size':
-#                 training_size = v
-#             if k == 'testing_size':
-#                 testing_size = v
-#             if k == 'nb_continuous':
-#                 nb_continuous = v
-#             if k == 'nb_ordinal':
-#                 nb_ordinal = v
-#             if k == 'nb_nominal':
-#                 nb_nominal = v
-#             if k == 'nb_response':
-#                 nb_response = v
-
-#         self.training_data = ITRDataTable(training_size, nb_continuous,
-#                                           nb_ordinal, nb_nominal, nb_response)
-
-#         self.testing_data = ITRDataTable(testing_size, nb_continuous,
-#                                          nb_ordinal, nb_nominal, nb_response)
-
-#     def generate(self, **args):
-#         for label, generator in args.items():   
-#             if label == "continuous":
-#                 self.training_data.set_continuous(generator)
-#                 self.testing_data.set_continuous(generator)
-#             if label == "ordinal":
-#                 self.training_data.set_ordinal(generator)
-#                 self.testing_data.set_ordinal(generator)
-#             if label == "nominal":
-#                 self.training_data.set_nominal(generator)
-#                 self.testing_data.set_nominal(generator)
-#             if label == "action":
-#                 self.training_data.set_action(generator)
-#                 self.testing_data.set_action(generator)
-#             if label == "response":
-#                 self.training_data.set_training_response(generator)
-#                 self.testing_data.set_testing_response(generator)
-
-#     def export(self, dataset_id):
-#         self.training_data.export("train" + str(dataset_id) + ".csv")
-#         self.testing_data.export("test" + str(dataset_id) + ".csv")
         
+
+
+    def export(self, fname):
+        """Save the data table to the specified file name"""
+
+        self.df.index.name = 'ID'
+        self.df.to_csv(fname)
+
+
+class SimulationEngine:
+    """Create training and testing tests for ITR
+
+    Attributes:
+        training_size (int): Sample size of the training data set
+        testing_size (int): Sample size of the testing data set
+        n_cont (int): Number of continuous variables
+        n_ord (int): Number of ordinal variables 
+        n_nom (int): Number of nominal variables 
+        n_resp (int): Number of responses
+        training_data (ITRDataTable): Training data set 
+        testing_data (ITRDataTable):  Testing data set 
+    """
+
+    def __init__(self, training_size = 500, testing_size = 50000,
+                 n_cont = 1, n_ord = 1, n_nom = 1, n_resp = 1) :
+        self.training_data = ITRDataTable(training_size,
+                                          n_cont, n_ord, n_nom, n_resp)
+        self.testing_data = ITRDataTable(testing_size,
+                                         n_cont, n_ord, n_nom, n_resp) 
+
+    def generate(self, generator):
+        """Generate training and testing data using the specified generator
+
+        Parameters:
+            generator (DataGenerator): Generator 
+
+        Returns: 
+            None
+        """
+        self.training_data.generate('training', generator)
+        self.testing_data.generate('testing', generator)
+
+    def export(self, desc):
+        """Save the training and testing data to files. 
+
+        Parameters: 
+            desc (str): Description of the data set 
+
+        Returns:
+            None
+        """
+        self.training_data.export("train" + desc + ".csv")
+        self.testing_data.export("test" + desc + ".csv")
+        
+        
+                                              
+        
+
+            
