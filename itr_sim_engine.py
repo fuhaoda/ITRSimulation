@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from functools import partial
+import sys
 
 class DataGenerator:
     """Generate data for ITR.
@@ -13,18 +14,20 @@ class DataGenerator:
         m_resp: Method used to generate response variable
     """
     
-    def __init__(self, seed, 
-                 m_cont = partial(np.random.uniform(0, 1)),
-                 m_ord = partial(np.random.randint(0, 4)),
-                 m_nom = partial(np.random.randint(0, 4)),
-                 m_act = partial(np.random.randint(0, 2)),
-                 m_resp = partial(np.random.uniform(0, 1))):
-        np.random.seed(seed) 
-        self.m_cont = m_cont
-        self.m_ord = m_ord
-        self.m_nom = m_nom
-        self.m_act = m_act
-        self.m_resp = m_resp
+    def __init__(self, seed):
+                 # m_cont = partial(np.random.uniform(0, 1)),
+                 # m_ord = partial(np.random.randint(0, 4)),
+                 # m_nom = partial(np.random.randint(0, 4)),
+                 # m_act = partial(np.random.randint(0, 2)),
+                 # m_resp = partial(np.random.uniform(0, 1))):
+        np.random.seed(seed)
+        # self.var_type = var_type
+
+        # self.m_cont = m_cont
+        # self.m_ord = m_ord
+        # self.m_nom = m_nom
+        # self.m_act = m_act
+        # self.m_resp = m_resp
 
     def generate(self, var_type, sample_size): 
         """Generate samples of the specified type
@@ -34,18 +37,23 @@ class DataGenerator:
             sample_size (int): Number of samples to generate
 
         Returns: 
-            An array of samples drawn the specified underlying distribution
+            A numpy array of samples drawn the specified underlying distribution
         """
         if (var_type == 'cont'):
-            return self.m_cont(sample_size)
+            # return self.m_cont(sample_size)
+            return np.random.uniform(0, 1, size=sample_size)
         elif (var_type == 'ord'):
-            return self.m_ord(sample_size)
+            # return self.m_ord(sample_size)
+            return np.random.randint(0, 4, size=sample_size)
         elif (var_type == 'nom'):
-            return self.m_nom(sample_size)
+            # return self.m_nom(sample_size)
+            return np.random.randint(0, 4, size=sample_size)
         elif (var_type == 'act'):
-            return self.m_act(sample_size)
+            # return self.m_act(sample_size)
+            return np.random.randint(0, 2, size=sample_size)
         else:
-            return self.m_resp(sample_size)
+            # return self.m_resp(sample_size)
+            return np.random.uniform(0, 1, size=sample_size)
         
 
 class ITRDataTable:
@@ -177,8 +185,24 @@ class SimulationEngine:
         self.training_data.export("train" + desc + ".csv")
         self.testing_data.export("test" + desc + ".csv")
         
-        
-                                              
+
+
+
+def main():
+    """
+    This is only for test purpose, will be removed before release
+    :return:
+    """
+
+    g = DataGenerator(1)
+    s = SimulationEngine()
+    s.generate(g)
+    s.export("test")
+
+
+if __name__ == "__main__":
+    main()
+
         
 
             
