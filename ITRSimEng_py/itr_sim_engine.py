@@ -196,7 +196,7 @@ def main():
 
     g = DataGenerator(1)
     s = SimulationEngine()
-    s.generate(g)
+    s.generate(g)           # The naming seems confusing, data generator vs engine generate
     s.export("test")
 
 
