@@ -9,14 +9,14 @@ class DataGenerator:
     @staticmethod
     def generate(var_type, sample_size, low=0, high=1):
         """Generate samples of the specified type
-        
+
         Parameters:
-            var_type (str): Type of the variable 
+            var_type (str): Type of the variable
             sample_size (int): Number of samples to generate
             low (int): the low boundary of the random variable
             high (int): the high boundary of the random variable
 
-        Returns: 
+        Returns:
             A numpy array of samples drawn the specified underlying distribution
         """
         if var_type == 'cont':
@@ -32,14 +32,14 @@ class DataGenerator:
 
 
 class ITRDataTable:
-    """A data table of covariates, actions, and responses for ITR. 
+    """A data table of covariates, actions, and responses for ITR.
 
     Attributes:
         sample_size: (int or tuple) Number of samples
-        n_cont: Number of continuous variables 
+        n_cont: Number of continuous variables
         n_ord:  Number of ordinal variables
-        n_nom:  Number of nominal variables 
-        n_resp: Number of responses 
+        n_nom:  Number of nominal variables
+        n_resp: Number of responses
         df:     Data frame holding the content of the table
     """
 
@@ -117,11 +117,11 @@ class SimulationEngine:
         training_size (int): Sample size of the training data set
         testing_size (int): Sample size of the testing data set
         n_cont (int): Number of continuous variables
-        n_ord (int): Number of ordinal variables 
-        n_nom (int): Number of nominal variables 
+        n_ord (int): Number of ordinal variables
+        n_nom (int): Number of nominal variables
         n_resp (int): Number of responses
-        training_data (ITRDataTable): Training data set 
-        testing_data (ITRDataTable):  Testing data set 
+        training_data (ITRDataTable): Training data set
+        testing_data (ITRDataTable):  Testing data set
     """
 
     def __init__(self, a_func, y_func, generator, n_cont, n_ord, n_nom, n_resp, ydim,
@@ -139,9 +139,9 @@ class SimulationEngine:
         """Generate training and testing data using the specified generator
 
         Parameters:
-            generator (DataGenerator): Generator 
+            generator (DataGenerator): Generator
 
-        Returns: 
+        Returns:
             None
         """
 
@@ -170,67 +170,13 @@ class SimulationEngine:
         return np.argmax(z[:, 1:], axis=1) + 1
 
     def export(self, desc):
-        """Save the training and testing data to files. 
+        """Save the training and testing data to files.
 
-        Parameters: 
-            desc (str): Description of the data set 
+        Parameters:
+            desc (str): Description of the data set
 
         Returns:
             None
         """
         self.training_data.export(desc + "train.csv")
         self.testing_data.export(desc + "test_X.csv")
-
-
-def a_func(x, n_resp):
-    beta_a = [-2.5, 3, 0, 1, 1]
-    z = np.matmul(x, np.array(beta_a).reshape(-1, 1))
-    p = 1 / (1 + np.exp(-z))
-    a = np.random.binomial(n_resp - 1, p) + 1
-    return a.reshape(-1, 1)
-
-
-def y_func(x, a):
-    beta_y = [[-2, 3, 0, 1, 1],
-              [-2, 3, 0, 1, 1]]
-    t_y = [[0.5],
-           [0.5]]
-    ydim = len(beta_y)
-    beta_t = np.append(beta_y, t_y, axis=1)
-    assert beta_t.shape == (ydim, x.shape[1] + 1)
-
-    y = np.matmul(np.append(x, a, axis=1), beta_t.T) + \
-        np.random.randn(x.shape[0], ydim)
-    return y
-
-
-def main():
-    """
-    This is only for test purpose, will be removed before release
-    :return:
-    """
-
-    g = DataGenerator(seed=1)
-    s = SimulationEngine(a_func=a_func,
-                         y_func=y_func,
-                         training_size=100,
-                         testing_size=1000,
-                         n_cont=2,
-                         n_ord=1,
-                         n_nom=1,
-                         n_resp=2,
-                         ydim=2,
-                         generator=g)
-    s.generate()  # The naming seems confusing, data generator vs engine generate
-    s.export("case1")
-    test_ys = s.tys()
-    test_azero = s.azero(test_ys)
-
-    pd.DataFrame(np.insert(test_ys, 1, test_azero, axis=1),
-                 columns=['A', 'A0', 'Y1_0', 'Y1_1', 'Y2_0', 'Y2_1']).astype({'A': 'int',
-                                                                              'A0': 'int'}).to_csv("test_Ys.csv",
-                                                                                                   index_label="ID")
-
-
-if __name__ == "__main__":
-    main()
