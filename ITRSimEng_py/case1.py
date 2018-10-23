@@ -1,6 +1,8 @@
 from ITRSimEng_py.ITRSimpy import *
 
-# need to define the a_func and y_func
+# This is an example of using ITR Simulation Engine
+# The current a_func is a linear model of X and the y_func is a linear model of X and A
+# User can define customized a_func and y_func
 
 
 def a_func(x, n_resp):
