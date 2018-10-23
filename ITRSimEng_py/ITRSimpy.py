@@ -101,13 +101,16 @@ class ITRDataTable:
         :return:
         """
         self.y = y_func(self.x, self.act, self.ydim)
-        for i in range(self.y.shape[1]):
-            self.df.insert(loc=0, column=f"Y_{i}", value=self.y[:, i])
+        if self.y.shape[1] == 1:
+            self.df.insert(loc=0, column="Y", value=self.y[:, 0])
+        else:
+            for i in range(self.y.shape[1]):
+                self.df.insert(loc=0, column=f"Y_{i}", value=self.y[:, i])
 
     def export(self, fname):
         """Save the data table to the specified file name"""
 
-        self.df.index.name = 'ID'
+        self.df.index.name = 'SubID'
         self.df.to_csv(fname)
 
 
@@ -179,5 +182,5 @@ class SimulationEngine:
         Returns:
             None
         """
-        self.training_data.export(desc + "train.csv")
-        self.testing_data.export(desc + "test_X.csv")
+        self.training_data.export(desc + "_train.csv")
+        self.testing_data.export(desc + "_test_X.csv")

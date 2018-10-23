@@ -61,4 +61,4 @@ test_ys_df = pd.DataFrame(test_ys.reshape(testing_size, -1),
                           columns=s.get_testcol())
 test_ys_df['A'] = s.testing_data.act
 test_ys_df['A0'] = test_azero
-test_ys_df.to_csv("case1_test_Ys.csv", index_label="ID")
+test_ys_df.to_csv("case1_test_Ys.csv", index_label="SubID")
