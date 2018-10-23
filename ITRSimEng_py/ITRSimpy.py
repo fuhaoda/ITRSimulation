@@ -43,12 +43,13 @@ class ITRDataTable:
         df:     Data frame holding the content of the table
     """
 
-    def __init__(self, sample_size, n_cont, n_ord, n_nom, n_resp, engine):
+    def __init__(self, sample_size, n_cont, n_ord, n_nom, n_resp, ydim, engine):
         self.sample_size = sample_size
         self.n_cont = n_cont
         self.n_ord = n_ord
         self.n_nom = n_nom
         self.n_resp = n_resp
+        self.ydim = ydim
         self.engine = engine
         self.array = np.ones((sample_size, 1))
         self.df = pd.DataFrame()
@@ -91,7 +92,7 @@ class ITRDataTable:
         """
         self.act = a_func(self.x, self.n_resp)
         self.array = np.append(self.array, self.act, axis=1)
-        self.df['A'] = self.act.flatten()
+        self.df.insert(loc=0, column='Trt', value=self.act.flatten())
 
     def fillup_y(self, y_func):
         """
@@ -99,9 +100,9 @@ class ITRDataTable:
         :param y_func:
         :return:
         """
-        self.y = y_func(self.x, self.act)
+        self.y = y_func(self.x, self.act, self.ydim)
         for i in range(self.y.shape[1]):
-            self.df['Y_' + str(i)] = self.y[:, i]
+            self.df.insert(loc=0, column=f"Y_{i}", value=self.y[:, i])
 
     def export(self, fname):
         """Save the data table to the specified file name"""
@@ -132,8 +133,14 @@ class SimulationEngine:
         self.n_resp = n_resp
         self.ydim = ydim
         self.testing_size = testing_size
-        self.training_data = ITRDataTable(training_size, n_cont, n_ord, n_nom, n_resp, generator)
-        self.testing_data = ITRDataTable(testing_size, n_cont, n_ord, n_nom, n_resp, generator)
+        self.training_data = ITRDataTable(training_size, n_cont, n_ord, n_nom, n_resp, ydim, generator)
+        self.testing_data = ITRDataTable(testing_size, n_cont, n_ord, n_nom, n_resp, ydim, generator)
+
+    def get_testcol(self):
+        if self.ydim == 1:
+            return [f"Y({resp})" for resp in range(1, self.n_resp + 1)]
+        else:
+            return [f"Y({resp})_{ndim}" for resp in range(1, self.n_resp + 1) for ndim in range(self.ydim)]
 
     def generate(self):
         """Generate training and testing data using the specified generator
@@ -148,26 +155,20 @@ class SimulationEngine:
         self.training_data.fillup_x()
         self.training_data.fillup_a(self.a_func)
         self.training_data.fillup_y(self.y_func)
-
         self.testing_data.fillup_x()
 
     def tys(self):
         self.testing_data.fillup_a(self.a_func)
-        a_obs = self.testing_data.act
-        y_matrix = a_obs
+        y_matrix = np.zeros((self.testing_size, self.n_resp, self.ydim))
         for trt in range(1, self.n_resp + 1):
-            y = self.y_func(self.testing_data.x, np.ones(self.testing_size).reshape(-1, 1) * trt)
-            y_matrix = np.append(y_matrix, y, axis=1)
-
+            y_matrix[:, trt - 1] = self.y_func(self.testing_data.x,
+                                               np.ones(self.testing_size).reshape(-1, 1) * trt,
+                                               self.ydim)
         return y_matrix
 
     def azero(self, y_matrix):
-        z = y_matrix[:, :1]
-        idx = range(y_matrix.shape[1])
-        idxlist = [idx[i:i + self.ydim] for i in range(1, y_matrix.shape[1], self.ydim)]
-        for i in range(len(idxlist)):
-            z = np.append(z, np.sum(y_matrix[:, idxlist[i]], axis=1).reshape(-1, 1), axis=1)
-        return np.argmax(z[:, 1:], axis=1) + 1
+        y_sum = np.sum(y_matrix, axis=-1)
+        return np.argmax(y_sum, axis=1) + 1
 
     def export(self, desc):
         """Save the training and testing data to files.
