@@ -6,6 +6,7 @@ class DataGenerator:
     def __init__(self, seed):
         np.random.seed(seed)
 
+    #todo: why do we need a staticmethod?
     @staticmethod
     def generate(var_type, sample_size, low=0, high=1):
         """Generate samples of the specified type
@@ -19,6 +20,7 @@ class DataGenerator:
         Returns:
             A numpy array of samples drawn the specified underlying distribution
         """
+        #todo: the ord and nom scale to include the high value. the tinal else need to report error. Also var_type to lower_case before coparison
         if var_type == 'cont':
             return np.random.uniform(low, high, size=sample_size)
         elif var_type == 'ord' or var_type == 'nom':
@@ -58,6 +60,7 @@ class ITRDataTable:
         self.y = None
 
     def fillup_x(self):
+        #todo: we also need to feed x_func
         """Generate data using the provided data generator
 
         Parameters:
@@ -70,7 +73,7 @@ class ITRDataTable:
             temp = self.engine.generate('cont', self.sample_size, low=0, high=1)
             self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
             self.df['X_Cont' + str(i)] = temp
-
+        #todo: remove the hard coding
         for i in range(self.n_ord):
             temp = self.engine.generate('ord', self.sample_size, low=0, high=4)
             self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
