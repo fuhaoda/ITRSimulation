@@ -1,0 +1,10 @@
+The ITR Simulation Engine Python Version
+
+1. What it is?
+It is a python version of ITR Simulation Engine
+
+2. How to use it?
+(1) Put the ITRSimpy.py into your working directory or $PYTHONPATH
+(2) Follow the example code "case_cpp.py"
+(3) Make modifications, including creating new a_func and y_func, change the engine parameter accordingly
+(4) Run the code
