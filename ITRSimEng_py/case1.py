@@ -6,7 +6,20 @@ from ITRSimpy import *
 # The current a_func is a linear model of X and the y_func is a linear model of X and A
 # User can define customized a_func and y_func
 
+TRAINING_SIZE = 500
+TESTING_SIZE = 50000
+NUMBER_RESPONSE = 2
+Y_DIMENSION = 2
+OUTPUT_PREFIX = "case1"
+
+
 def x_func(sample_size, dg):
+    """
+     This func will return the X matrix
+     :param sample_size:
+     :param dg:
+     :return:
+     """
 
     # User need to define the dimension (dim) and boundary (low and high) of the random generated numbers
     # User can also change the title of the X matrix
@@ -40,7 +53,7 @@ def a_func(x, n_resp):
     :return: a n x 1 matrix of A
     """
 
-    beta_a = [-2.5, 3, 0, 1, 1, 0, 0, 0]
+    beta_a = [-2.5, 3, 0, 1, 1, 0, 0]
     assert len(beta_a) == x.shape[1]
     z = np.matmul(x, np.array(beta_a).reshape(-1, 1))
     p = 1 / (1 + np.exp(-z))
@@ -81,13 +94,13 @@ def main():
     s = SimulationEngine(x_func=x_func,
                          a_func=a_func,
                          y_func=y_func,
-                         training_size=5,
-                         testing_size=50,
-                         n_resp=2,
-                         ydim=2,
+                         training_size=TRAINING_SIZE,
+                         testing_size=TESTING_SIZE,
+                         n_resp=NUMBER_RESPONSE,
+                         ydim=Y_DIMENSION,
                          generator=g)
     s.generate()
-    s.export(sys.argv[0])
+    s.export(OUTPUT_PREFIX)
     test_ys = s.tys()
     testing_size = test_ys.shape[0]
     test_azero = s.azero(test_ys)
@@ -95,7 +108,7 @@ def main():
                               columns=s.get_testcol())
     test_ys_df['A'] = s.testing_data.act
     test_ys_df['A0'] = test_azero
-    test_ys_df.to_csv("case1_test_Ys.csv", index_label="ID")
+    test_ys_df.to_csv(f"{OUTPUT_PREFIX}_test_Ys.csv", index_label="ID")
 
 
 if __name__ == "__main__":

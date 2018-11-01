@@ -6,6 +6,42 @@ from ITRSimpy import *
 # The current a_func is a linear model of X and the y_func is a linear model of X and A
 # User can define customized a_func and y_func
 
+TRAINING_SIZE = 500
+TESTING_SIZE = 50000
+NUMBER_RESPONSE = 2
+Y_DIMENSION = 2
+OUTPUT_PREFIX = "case_cpp"
+
+
+def x_func(sample_size, dg):
+    """
+    This func will return the X matrix
+    :param sample_size:
+    :param dg:
+    :return:
+    """
+
+    # User need to define the dimension (dim) and boundary (low and high) of the random generated numbers
+    # User can also change the title of the X matrix
+    cont_array = dg.generate('cont', sample_size, dim=4, low=0, high=1)
+    cont_title = [f"X_Cont{i}" for i in range(cont_array.shape[1])]
+    ord_array = dg.generate('ord', sample_size, dim=2, low=0, high=1)
+    ord_title = [f"X_Cont{i}" for i in range(ord_array.shape[1])]
+    nom_array = dg.generate('nom', sample_size, dim=1, low=0, high=1)
+    nom_title = [f"X_Cont{i}" for i in range(nom_array.shape[1])]
+
+    x_array = np.column_stack([cont_array, ord_array, nom_array])
+    x_title = cont_title + ord_title + nom_title
+
+    """
+    # Or user can import a X matrix from the csv file:
+    x_df = pd.read_csv("filename")
+    x_array = np.asarray(x_df)
+    x_title = list(x_df)
+    """
+
+    return x_title, x_array
+
 
 def a_func(x, n_resp):
     """
@@ -40,25 +76,32 @@ def y_func(x, a, ydim):
     return y
 
 
-# Modify section below accordingly
-g = DataGenerator(seed=1)
-s = SimulationEngine(a_func=a_func,
-                     y_func=y_func,
-                     training_size=500,
-                     testing_size=50000,
-                     n_cont=4,
-                     n_ord=1,
-                     n_nom=1,
-                     n_resp=2,
-                     ydim=1,
-                     generator=g)
-s.generate()
-s.export(sys.argv[0].split(".")[0])
-test_ys = s.tys()
-testing_size = test_ys.shape[0]
-test_azero = s.azero(test_ys)
-test_ys_df = pd.DataFrame(test_ys.reshape(testing_size, -1),
-                          columns=s.get_testcol())
-test_ys_df['A'] = s.testing_data.act
-test_ys_df['A0'] = test_azero
-test_ys_df.to_csv("case1_test_Ys.csv", index_label="SubID")
+def main():
+    """
+
+    :return:
+    """
+
+    g = DataGenerator(seed=1)
+    s = SimulationEngine(x_func=x_func,
+                         a_func=a_func,
+                         y_func=y_func,
+                         training_size=TRAINING_SIZE,
+                         testing_size=TESTING_SIZE,
+                         n_resp=NUMBER_RESPONSE,
+                         ydim=Y_DIMENSION,
+                         generator=g)
+    s.generate()
+    s.export(OUTPUT_PREFIX)
+    test_ys = s.tys()
+    testing_size = test_ys.shape[0]
+    test_azero = s.azero(test_ys)
+    test_ys_df = pd.DataFrame(test_ys.reshape(testing_size, -1),
+                              columns=s.get_testcol())
+    test_ys_df['A'] = s.testing_data.act
+    test_ys_df['A0'] = test_azero
+    test_ys_df.to_csv(f"{OUTPUT_PREFIX}_test_Ys.csv", index_label="ID")
+
+
+if __name__ == "__main__":
+    main()
