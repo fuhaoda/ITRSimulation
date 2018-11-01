@@ -4,14 +4,12 @@ import numpy as np
 
 class DataGenerator:
     def __init__(self, seed):
-        np.random.seed(seed)
+        self.state = np.random.RandomState(seed)
 
-    #todo: why do we need a staticmethod?
-    @staticmethod
-    def generate(var_type, sample_size, low=0, high=1):
+    def generate(self, var_type, sample_size, low=0, high=1):
         """Generate samples of the specified type
 
-        Parameters:
+        Parameters:§
             var_type (str): Type of the variable
             sample_size (int): Number of samples to generate
             low (int): the low boundary of the random variable
@@ -20,17 +18,14 @@ class DataGenerator:
         Returns:
             A numpy array of samples drawn the specified underlying distribution
         """
-        #todo: the ord and nom scale to include the high value. the tinal else need to report error. Also var_type to lower_case before coparison
-        if var_type == 'cont':
-            return np.random.uniform(low, high, size=sample_size)
-        elif var_type == 'ord' or var_type == 'nom':
-            return np.random.randint(low, high, size=sample_size)
-        elif var_type == 'nom':
-            return np.random.randint(low, high, size=sample_size)
-        elif var_type == 'act':
-            return np.random.randint(low, high, size=sample_size)
+        if var_type.lower() == 'cont':
+            return self.state.uniform(low, high, size=sample_size)
+        elif var_type.lower() == 'ord' or var_type.lower() == 'nom':
+            return self.state.randint(low, high+1, size=sample_size)
+        elif var_type.lower() == 'act':
+            return self.state.randint(low, high+1, size=sample_size)
         else:
-            return np.random.uniform(low, high, size=sample_size)
+            return None
 
 
 class ITRDataTable:
@@ -59,8 +54,9 @@ class ITRDataTable:
         self.act = None
         self.y = None
 
-    def fillup_x(self):
-        #todo: we also need to feed x_func
+    def fillup_x(self, x_func=None):
+        # todo: we also need to feed x_func
+        # TODO: QUESTION what is the input and output of x_func?
         """Generate data using the provided data generator
 
         Parameters:
@@ -68,21 +64,24 @@ class ITRDataTable:
         Returns:
             None
         """
+        if x_func:
+            # TODO finish here
+            pass
+        else:
+            for i in range(self.n_cont):
+                temp = self.engine.generate('cont', self.sample_size, low=0, high=1)
+                self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
+                self.df['X_Cont' + str(i)] = temp
+            # todo: remove the hard coding
+            for i in range(self.n_ord):
+                temp = self.engine.generate('ord', self.sample_size, low=0, high=4)
+                self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
+                self.df['X_Ord' + str(i)] = temp
 
-        for i in range(self.n_cont):
-            temp = self.engine.generate('cont', self.sample_size, low=0, high=1)
-            self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
-            self.df['X_Cont' + str(i)] = temp
-        #todo: remove the hard coding
-        for i in range(self.n_ord):
-            temp = self.engine.generate('ord', self.sample_size, low=0, high=4)
-            self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
-            self.df['X_Ord' + str(i)] = temp
-
-        for i in range(self.n_nom):
-            temp = self.engine.generate('nom', self.sample_size, low=0, high=4)
-            self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
-            self.df['X_Nom' + str(i)] = temp
+            for i in range(self.n_nom):
+                temp = self.engine.generate('nom', self.sample_size, low=0, high=4)
+                self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
+                self.df['X_Nom' + str(i)] = temp
 
         self.x = self.array
 
