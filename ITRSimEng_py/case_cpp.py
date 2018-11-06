@@ -10,7 +10,7 @@ TRAINING_SIZE = 500
 TESTING_SIZE = 50000
 NUMBER_RESPONSE = 2
 Y_DIMENSION = 2
-OUTPUT_PREFIX = "case_2_1"
+OUTPUT_PREFIX = "case_cpp"
 
 class CaseDataGenerator(DataGenerator):
     """
