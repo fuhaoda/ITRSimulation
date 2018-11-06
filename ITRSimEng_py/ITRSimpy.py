@@ -4,13 +4,12 @@ import numpy as np
 
 class DataGenerator:
     def __init__(self, seed):
-        np.random.seed(seed)
+        self.state = np.random.RandomState(seed)
 
-    @staticmethod
-    def generate(var_type, sample_size, low=0, high=1):
+    def generate(self, var_type, sample_size, dim=1, low=0, high=1):
         """Generate samples of the specified type
 
-        Parameters:
+        Parameters:§
             var_type (str): Type of the variable
             sample_size (int): Number of samples to generate
             low (int): the low boundary of the random variable
@@ -19,16 +18,14 @@ class DataGenerator:
         Returns:
             A numpy array of samples drawn the specified underlying distribution
         """
-        if var_type == 'cont':
-            return np.random.uniform(low, high, size=sample_size)
-        elif var_type == 'ord' or var_type == 'nom':
-            return np.random.randint(low, high, size=sample_size)
-        elif var_type == 'nom':
-            return np.random.randint(low, high, size=sample_size)
-        elif var_type == 'act':
-            return np.random.randint(low, high, size=sample_size)
+        if var_type.lower() == 'cont':
+            return self.state.uniform(low, high, size=(sample_size, dim))
+        elif var_type.lower() == 'ord' or var_type.lower() == 'nom':
+            return self.state.randint(low, high+1, size=(sample_size, dim))
+        # elif var_type.lower() == 'act':
+        #     return self.state.randint(low, high+1, size=(sample_size, dim))
         else:
-            return np.random.uniform(low, high, size=sample_size)
+            return None
 
 
 class ITRDataTable:
@@ -43,21 +40,18 @@ class ITRDataTable:
         df:     Data frame holding the content of the table
     """
 
-    def __init__(self, sample_size, n_cont, n_ord, n_nom, n_resp, ydim, engine):
+    def __init__(self, sample_size, n_resp, ydim, engine):
         self.sample_size = sample_size
-        self.n_cont = n_cont
-        self.n_ord = n_ord
-        self.n_nom = n_nom
         self.n_resp = n_resp
         self.ydim = ydim
         self.engine = engine
         self.array = np.ones((sample_size, 1))
-        self.df = pd.DataFrame()
+        self.df = None
         self.x = None
         self.act = None
         self.y = None
 
-    def fillup_x(self):
+    def fillup_x(self, x_func):
         """Generate data using the provided data generator
 
         Parameters:
@@ -65,23 +59,9 @@ class ITRDataTable:
         Returns:
             None
         """
-
-        for i in range(self.n_cont):
-            temp = self.engine.generate('cont', self.sample_size, low=0, high=1)
-            self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
-            self.df['X_Cont' + str(i)] = temp
-
-        for i in range(self.n_ord):
-            temp = self.engine.generate('ord', self.sample_size, low=0, high=4)
-            self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
-            self.df['X_Ord' + str(i)] = temp
-
-        for i in range(self.n_nom):
-            temp = self.engine.generate('nom', self.sample_size, low=0, high=4)
-            self.array = np.append(self.array, temp.reshape(-1, 1), axis=1)
-            self.df['X_Nom' + str(i)] = temp
-
-        self.x = self.array
+        x_title, self.x = x_func(self.sample_size, self.engine)
+        self.df = pd.DataFrame(self.x, columns=x_title)
+        self.array = self.x
 
     def fillup_a(self, a_func):
         """Fill up A according to the indicated model parameters (beta) and number of treatment options (n)
@@ -128,16 +108,17 @@ class SimulationEngine:
         testing_data (ITRDataTable):  Testing data set
     """
 
-    def __init__(self, a_func, y_func, generator, n_cont, n_ord, n_nom, n_resp, ydim,
+    def __init__(self, x_func, a_func, y_func, generator, n_resp, ydim,
                  training_size=500, testing_size=50000):
+        self.x_func = x_func
         self.a_func = a_func
         self.y_func = y_func
         self.generator = generator
         self.n_resp = n_resp
         self.ydim = ydim
         self.testing_size = testing_size
-        self.training_data = ITRDataTable(training_size, n_cont, n_ord, n_nom, n_resp, ydim, generator)
-        self.testing_data = ITRDataTable(testing_size, n_cont, n_ord, n_nom, n_resp, ydim, generator)
+        self.training_data = ITRDataTable(training_size, n_resp, ydim, generator)
+        self.testing_data = ITRDataTable(testing_size, n_resp, ydim, generator)
 
     def get_testcol(self):
         if self.ydim == 1:
@@ -155,10 +136,10 @@ class SimulationEngine:
             None
         """
 
-        self.training_data.fillup_x()
+        self.training_data.fillup_x(self.x_func)
         self.training_data.fillup_a(self.a_func)
         self.training_data.fillup_y(self.y_func)
-        self.testing_data.fillup_x()
+        self.testing_data.fillup_x(self.x_func)
 
     def tys(self):
         self.testing_data.fillup_a(self.a_func)
