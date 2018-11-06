@@ -26,9 +26,9 @@ def x_func(sample_size, dg):
     cont_array = dg.generate('cont', sample_size, dim=4, low=0, high=1)
     cont_title = [f"X_Cont{i}" for i in range(cont_array.shape[1])]
     ord_array = dg.generate('ord', sample_size, dim=2, low=0, high=1)
-    ord_title = [f"X_Cont{i}" for i in range(ord_array.shape[1])]
+    ord_title = [f"X_Odd{i}" for i in range(ord_array.shape[1])]
     nom_array = dg.generate('nom', sample_size, dim=1, low=0, high=1)
-    nom_title = [f"X_Cont{i}" for i in range(nom_array.shape[1])]
+    nom_title = [f"X_Nom{i}" for i in range(nom_array.shape[1])]
 
     x_array = np.column_stack([cont_array, ord_array, nom_array])
     x_title = cont_title + ord_title + nom_title
