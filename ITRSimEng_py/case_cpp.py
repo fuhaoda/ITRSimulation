@@ -12,6 +12,11 @@ NUMBER_RESPONSE = 2
 Y_DIMENSION = 2
 OUTPUT_PREFIX = "case_2_1"
 
+class CaseDataGenerator(DataGenerator):
+    """
+    Define the Generator for each case, redefine the generate function if needed (like constrained on a donut-shape space)
+    """
+    pass
 
 def x_func(sample_size, dg):
     """
