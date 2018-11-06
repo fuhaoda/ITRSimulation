@@ -10,7 +10,7 @@ TRAINING_SIZE = 500
 TESTING_SIZE = 50000
 NUMBER_RESPONSE = 2
 Y_DIMENSION = 2
-OUTPUT_PREFIX = "case_cpp"
+OUTPUT_PREFIX = "case_2_1"
 
 
 def x_func(sample_size, dg):
@@ -50,7 +50,7 @@ def a_func(x, n_resp):
 
     :param x: the input X matrix for the a_function
     :param n_resp: the number of possible responses, i.e. treatment options
-    :return: a n x 1 matrix of A
+    :return: a n x 1 matrix of A (starging from 1)
     """
     beta_a = [-2.5, 3, 0, 1, 1, 0, 0]
     z = np.matmul(x, np.array(beta_a).reshape(-1, 1))
@@ -100,7 +100,7 @@ def main():
                               columns=s.get_testcol())
     test_ys_df['A'] = s.testing_data.act
     test_ys_df['A0'] = test_azero
-    test_ys_df.to_csv(f"{OUTPUT_PREFIX}_test_Ys.csv", index_label="ID")
+    test_ys_df.to_csv(f"{OUTPUT_PREFIX}_test_Ys.csv", index_label="SubID")
 
 
 if __name__ == "__main__":
