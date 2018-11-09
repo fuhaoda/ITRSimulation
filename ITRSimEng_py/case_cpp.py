@@ -12,6 +12,11 @@ NUMBER_RESPONSE = 2
 Y_DIMENSION = 2
 OUTPUT_PREFIX = "case_cpp"
 
+class CaseDataGenerator(DataGenerator):
+    """
+    Define the Generator for each case, redefine the generate function if needed (like constrained on a donut-shape space)
+    """
+    pass
 
 def x_func(sample_size, dg):
     """
@@ -26,9 +31,9 @@ def x_func(sample_size, dg):
     cont_array = dg.generate('cont', sample_size, dim=4, low=0, high=1)
     cont_title = [f"X_Cont{i}" for i in range(cont_array.shape[1])]
     ord_array = dg.generate('ord', sample_size, dim=2, low=0, high=1)
-    ord_title = [f"X_Cont{i}" for i in range(ord_array.shape[1])]
+    ord_title = [f"X_Odd{i}" for i in range(ord_array.shape[1])]
     nom_array = dg.generate('nom', sample_size, dim=1, low=0, high=1)
-    nom_title = [f"X_Cont{i}" for i in range(nom_array.shape[1])]
+    nom_title = [f"X_Nom{i}" for i in range(nom_array.shape[1])]
 
     x_array = np.column_stack([cont_array, ord_array, nom_array])
     x_title = cont_title + ord_title + nom_title
@@ -50,7 +55,7 @@ def a_func(x, n_resp):
 
     :param x: the input X matrix for the a_function
     :param n_resp: the number of possible responses, i.e. treatment options
-    :return: a n x 1 matrix of A
+    :return: a n x 1 matrix of A (starging from 1)
     """
     beta_a = [-2.5, 3, 0, 1, 1, 0, 0]
     z = np.matmul(x, np.array(beta_a).reshape(-1, 1))
@@ -100,7 +105,7 @@ def main():
                               columns=s.get_testcol())
     test_ys_df['A'] = s.testing_data.act
     test_ys_df['A0'] = test_azero
-    test_ys_df.to_csv(f"{OUTPUT_PREFIX}_test_Ys.csv", index_label="ID")
+    test_ys_df.to_csv(f"{OUTPUT_PREFIX}_test_Ys.csv", index_label="SubID")
 
 
 if __name__ == "__main__":

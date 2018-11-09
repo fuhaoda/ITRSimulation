@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+"""
+This is an implecation of the simulation setting of "Convergence in RCIs" of
+"Estimating optimal treatment regimes via sbugroup identification in randomized contro trials and observational studies"
+ 
+tunning parameter: theta, depth in y_func
+
+@author: yujiad2
+"""
+
 import sys
 from ITRSimpy import *
 
@@ -9,8 +19,8 @@ from ITRSimpy import *
 TRAINING_SIZE = 500
 TESTING_SIZE = 50000
 NUMBER_RESPONSE = 2
-Y_DIMENSION = 2
-OUTPUT_PREFIX = "case1"
+Y_DIMENSION = 1
+OUTPUT_PREFIX = "case_2_2"
 
 class CaseDataGenerator(DataGenerator):
     """
@@ -20,19 +30,19 @@ class CaseDataGenerator(DataGenerator):
 
 def x_func(sample_size, dg):
     """
-     This func will return the X matrix
-     :param sample_size:
-     :param dg:
-     :return:
-     """
+    This func will return the X matrix
+    :param sample_size:
+    :param dg:
+    :return:
+    """
 
     # User need to define the dimension (dim) and boundary (low and high) of the random generated numbers
     # User can also change the title of the X matrix
     cont_array = dg.generate('cont', sample_size, dim=4, low=0, high=1)
     cont_title = [f"X_Cont{i}" for i in range(cont_array.shape[1])]
-    ord_array = dg.generate('ord', sample_size, dim=2, low=0, high=1)
-    ord_title = [f"X_Ord{i}" for i in range(ord_array.shape[1])]
-    nom_array = dg.generate('nom', sample_size, dim=1, low=0, high=1)
+    ord_array = dg.generate('ord', sample_size, dim=0, low=0, high=1)
+    ord_title = [f"X_Odd{i}" for i in range(ord_array.shape[1])]
+    nom_array = dg.generate('nom', sample_size, dim=0, low=0, high=1)
     nom_title = [f"X_Nom{i}" for i in range(nom_array.shape[1])]
 
     x_array = np.column_stack([cont_array, ord_array, nom_array])
@@ -50,42 +60,42 @@ def x_func(sample_size, dg):
 
 def a_func(x, n_resp):
     """
-    Users define the function of A here. The example below uses a linear function:
-        P(A) = sigmoid( -2.5 + 3*X0 + 0*X1 + 1*X2 + 1*X3 + 0*X4 + 0*X5)
+    randomly assigned with p=0.5
 
     :param x: the input X matrix for the a_function
     :param n_resp: the number of possible responses, i.e. treatment options
     :return: a n x 1 matrix of A
     """
-
-    beta_a = [-2.5, 3, 0, 1, 1, 0, 0]
-    assert len(beta_a) == x.shape[1]
-    z = np.matmul(x, np.array(beta_a).reshape(-1, 1))
-    p = 1 / (1 + np.exp(-z))
+    p = 0.5 * np.ones((x.shape[0],1))
     a = np.random.binomial(n_resp - 1, p) + 1
     return a.reshape(-1, 1)
 
 
 def y_func(x, a, ydim):
     """
-    Users define the function of Y here. The example below uses two linear functions to calculate
-    the two dimension of Y:
-        Y_0 = -2 + 3*X0 + X2 + X5 + 0.5*A      (0 is omitted here)
-        Y_1 = -2 + 4*X0 - X2 + X5 + 0.7*A
-    :param x: the input X matrix for the a_function
-    :param a: a n x 1 matrix of A
-    :return:
+    Treatment a coded as 1/2
     """
-    beta_y = [[-2, 3, 0, 1, 0, 0, 1],
-              [-2, 4, 0, -1, 0, 0, 1]]
-    t_y = [[0.5],
-           [0.7]]
-
-    beta_t = np.append(beta_y, t_y, axis=1)
-    assert beta_t.shape == (ydim, x.shape[1] + 1)
-
-    y = np.matmul(np.append(x, a, axis=1), beta_t.T) + \
-        np.random.randn(x.shape[0], ydim)
+    depth = 1
+    theta = 0.3
+    if depth == 1:
+        y = np.sign(x[:, 1] - 0.5).reshape(-1, 1) + \
+            theta * np.multiply(a-1, (x[:, 0] <= 0.6).reshape(-1,1)) + \
+            theta * np.multiply((2-a), (x[:, 0] > 0.6).reshape(-1,1)) + \
+            np.random.randn(x.shape[0], ydim)
+    elif depth == 2:
+        y = np.sign(x[:, 1] - 0.5).reshape(-1, 1) + \
+            theta * np.multiply(a-1, np.logical_and(x[:, 0] <= 0.7, x[:, 2] > 0.3).reshape(-1,1)) + \
+            theta * np.multiply((2-a), np.logical_xor(x[:, 0] <= 0.7, x[:, 2] > 0.3).reshape(-1,1)) + \
+            np.random.randn(x.shape[0], ydim)
+            
+    elif depth == 3:
+        y = np.sign(x[:, 1] - 0.5).reshape(-1, 1) + \
+            theta * np.multiply(a-1, np.logical_and.reduce((x[:, 0] <= 0.8, x[:, 1] > 0.2, x[:, 2] > 0.2)).reshape(-1,1)) + \
+            theta * np.multiply((2-a), np.logical_not(np.logical_and.reduce((x[:, 0] <= 0.8, x[:, 1] > 0.2, x[:, 2] > 0.2)).reshape(-1,1))) + \
+            np.random.randn(x.shape[0], ydim)
+            
+    else:
+        raise ValueError('The depth takes only 1, 2, 3')
     return y
 
 
