@@ -81,6 +81,7 @@ class ITRDataTable:
         :return:
         """
         self.y = y_func(self.x, self.act, self.ydim)
+        assert self.ydim == self.y.shape[1]
         if self.y.shape[1] == 1:
             self.df.insert(loc=0, column="Y", value=self.y[:, 0])
         else:
@@ -142,6 +143,10 @@ class SimulationEngine:
         self.testing_data.fillup_x(self.x_func)
 
     def tys(self):
+        """
+        Generate testing ys
+        :return: n x n_resp matrix
+        """
         self.testing_data.fillup_a(self.a_func)
         y_matrix = np.zeros((self.testing_size, self.n_resp, self.ydim))
         for trt in range(1, self.n_resp + 1):
