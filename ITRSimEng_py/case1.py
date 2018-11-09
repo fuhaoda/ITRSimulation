@@ -8,7 +8,7 @@ from ITRSimpy import *
 
 TRAINING_SIZE = 500
 TESTING_SIZE = 50000
-NUMBER_RESPONSE = 2
+NUMBER_ACT = 2
 Y_DIMENSION = 2
 OUTPUT_PREFIX = "case1"
 
@@ -47,14 +47,14 @@ def x_func(sample_size, dg):
 
     return x_title, x_array
 
-
-def a_func(x, n_resp):
+#todo: need to pass random state in.
+def a_func(x, n_act):
     """
     Users define the function of A here. The example below uses a linear function:
         P(A) = sigmoid( -2.5 + 3*X0 + 0*X1 + 1*X2 + 1*X3 + 0*X4 + 0*X5)
 
     :param x: the input X matrix for the a_function
-    :param n_resp: the number of possible responses, i.e. treatment options
+    :param n_act: the number of possible responses, i.e. treatment options
     :return: a n x 1 matrix of A
     """
 
@@ -62,10 +62,10 @@ def a_func(x, n_resp):
     assert len(beta_a) == x.shape[1]
     z = np.matmul(x, np.array(beta_a).reshape(-1, 1))
     p = 1 / (1 + np.exp(-z))
-    a = np.random.binomial(n_resp - 1, p) + 1
+    a = np.random.binomial(n_act-1, p)+1
     return a.reshape(-1, 1)
 
-
+#todo: need to pass random state in.
 def y_func(x, a, ydim):
     """
     Users define the function of Y here. The example below uses two linear functions to calculate
@@ -101,7 +101,7 @@ def main():
                          y_func=y_func,
                          training_size=TRAINING_SIZE,
                          testing_size=TESTING_SIZE,
-                         n_resp=NUMBER_RESPONSE,
+                         n_act=NUMBER_ACT,
                          ydim=Y_DIMENSION,
                          generator=g)
     s.generate()

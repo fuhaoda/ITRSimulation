@@ -40,9 +40,9 @@ class ITRDataTable:
         df:     Data frame holding the content of the table
     """
 
-    def __init__(self, sample_size, n_resp, ydim, engine):
+    def __init__(self, sample_size, n_act, ydim, engine):
         self.sample_size = sample_size
-        self.n_resp = n_resp
+        self.n_act = n_act
         self.ydim = ydim
         self.engine = engine
         self.array = np.ones((sample_size, 1))
@@ -70,7 +70,7 @@ class ITRDataTable:
 
         :return: None
         """
-        self.act = a_func(self.x, self.n_resp)
+        self.act = a_func(self.x, self.n_act)
         self.array = np.append(self.array, self.act, axis=1)
         self.df.insert(loc=0, column='Trt', value=self.act.flatten())
 
@@ -109,23 +109,23 @@ class SimulationEngine:
         testing_data (ITRDataTable):  Testing data set
     """
 
-    def __init__(self, x_func, a_func, y_func, generator, n_resp, ydim,
+    def __init__(self, x_func, a_func, y_func, generator, n_act, ydim,
                  training_size=500, testing_size=50000):
         self.x_func = x_func
         self.a_func = a_func
         self.y_func = y_func
         self.generator = generator
-        self.n_resp = n_resp
+        self.n_act = n_act
         self.ydim = ydim
         self.testing_size = testing_size
-        self.training_data = ITRDataTable(training_size, n_resp, ydim, generator)
-        self.testing_data = ITRDataTable(testing_size, n_resp, ydim, generator)
+        self.training_data = ITRDataTable(training_size, n_act, ydim, generator)
+        self.testing_data = ITRDataTable(testing_size, n_act, ydim, generator)
 
     def get_testcol(self):
         if self.ydim == 1:
-            return [f"Y({resp})" for resp in range(1, self.n_resp + 1)]
+            return [f"Y({resp})" for resp in range(1, self.n_act + 1)]
         else:
-            return [f"Y({resp})_{ndim}" for resp in range(1, self.n_resp + 1) for ndim in range(self.ydim)]
+            return [f"Y({resp})_{ndim}" for resp in range(1, self.n_act + 1) for ndim in range(self.ydim)]
 
     def generate(self):
         """Generate training and testing data using the specified generator
@@ -148,8 +148,8 @@ class SimulationEngine:
         :return: n x n_resp matrix
         """
         self.testing_data.fillup_a(self.a_func)
-        y_matrix = np.zeros((self.testing_size, self.n_resp, self.ydim))
-        for trt in range(1, self.n_resp + 1):
+        y_matrix = np.zeros((self.testing_size, self.n_act, self.ydim))
+        for trt in range(1, self.n_act + 1):
             y_matrix[:, trt - 1] = self.y_func(self.testing_data.x,
                                                np.ones(self.testing_size).reshape(-1, 1) * trt,
                                                self.ydim)
