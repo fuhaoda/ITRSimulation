@@ -1,0 +1,487 @@
+\documentclass{beamer}
+
+\usetheme[white, compactlogo]{Lilly}
+
+
+
+
+
+% begin definition
+\def\conas{\stackrel{a.s.} {\rightarrow}}         % conv. a.s.
+\def\conP{\stackrel{\cal P} {\rightarrow}}        % conv. in probability
+\def\conD{\stackrel{\cal D} {\rightsquigarrow}}        % conv. in distribution
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\def\iid{\stackrel{ iid} {\sim}}          % i.i.d
+\def\hat{\widehat}
+\def\tilde{\widetilde}
+
+%general sets
+\def\cal{\mathcal}
+\def\calA{{\cal A}} %Action sets
+\def\calB{{\cal B}} %Bounded set
+\def\calC{{\cal C}} %Convex set
+\def\calH{{\cal H}} %Hilbert Space
+\def\calS{{\cal S}} %A regular set
+\def\calNr{{\cal N}_r} %Neighborhood
+\def\calX{{\cal X}} %Covariate space
+\def\calF{{\cal F}} %Function space
+
+\def\calD{{\cal D}} %decision rule
+
+
+%special sets
+\def\bbR{{\mathbb{R}}} %Real number
+\def\bbN{{\mathbb{N}}}%Natural number
+\def\bbQ{{\mathbb{Q}}} %Rational number
+\def\bbZ{{\mathbb{Z}}} %Integer
+
+%Matrix
+\def\bA{{\bf A}}
+\def\bB{{\bf B}}
+\def\bC{{\bf C}}
+\def\bD{{\bf D}}
+\def\bH{{\bf H}}
+\def\bI{{\bf I}}
+\def\bJ{{\bf J}}
+\def\bP{{\bf P}}
+\def\bT{{\bf T}}
+\def\bW{{\bf W}}
+\def\bX{{\bf X}}
+
+%vector
+\def\balpha{{\boldsymbol \alpha}}
+\def\bbeta{{\boldsymbol \beta}}
+\def\btheta{{\boldsymbol \theta}}
+
+\def\bzero{{\bf 0}}
+\def\bone{{\bf 1}}
+\def\bbf{{\bf f}}
+\def\br{{\bf r}}
+\def\by{{\bf y}}
+
+%notations
+\def\sign{{\mathrm{sign}}}
+\def\var{{\mathrm{var}}}
+\def\cov{{\mathrm{cov}}}
+\def\ind{\perp\!\!\!\perp}
+
+%others
+\def\mif{\mathrm{if}\ }
+\def\ow{\mathrm{otherwise}\ }
+\def\st{\mathrm{subject\ to}\quad }
+\def\diag{\mathrm{diag}}
+\def\minimize{\mathrm{minimize}\quad }
+\def\maximize{\mathrm{maximize}\quad }
+\def\dom{{\rm dom}}
+
+
+
+\title{On Evaluation Of Personalized Intervention Algorithms}    % Enter your title between curly braces
+\author{Drafted by Haoda Fu, Ph.D.}                 % Enter your name between curly braces
+\institute{Eli Lilly and Company}      % Enter your institute name between curly braces
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+\note{Talk for 30 minutes}
+
+\section[Outline] {}
+
+% Creates table of contents slide incorporating
+% all \section and \subsection commands
+\begin{frame}
+	\frametitle{Outline}
+	\tableofcontents
+\end{frame}
+
+\section{Examples of personalized intervention}
+
+
+\begin{frame}
+	\frametitle{Where is the value from}
+	 \begin{description}[<+->]
+	 	\item[Context:] Digital technology will enable us to collect more individual patient data.
+	 	\item[Decision:] The purpose of collecting these data is to generate actionable insights. 
+	 	\item[Reward:] The goal of these actionable insights is to maximize individual patient's outcomes.
+	 \end{description}	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Learning - from data to knowledge}
+	Human beings, mammals learn from experiences. Experiences are data containing {\color{LillyRed} Context, Decision}, and {\color{LillyRed} Reward} .
+	
+	\begin{description}
+		\item[What we have:]  Collect  \emph{Context, Decision, Reward} from previous cases.
+		\item[What we want to do:] Develop \emph{algorithms} to figure out optimal decisions on existing data.
+		\item[How we apply it:] Apply the algorithms to recommend the optimal decision for a new context.
+		\end{description}
+
+\pause This topic is important because it is \emph{the} framework to make optimal decision	based on data.
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Illustration Data}
+	\begin{table}[htbp]
+		\centering
+		\caption{An illustration dataset}
+		\begin{tabular}{c|c|c|cccc}
+			\hline
+			\hline
+			ID& $Y$     & $A$   & $X_1$    & $X_2$    & $X_3$    & $\cdots$ \\
+			\hline
+			1& 1.5  & 1     & F     & 26    & 7.8   & $\cdots$ \\
+			2 &1.2  & 2     & M     & 28    & 8.2   & $\cdots$  \\
+			3 &2.3  & 3     & M     & 31    & 8.9   & $\cdots$  \\
+			4&0.9  & 2     & F     & 35    & 9.4   & $\cdots$  \\
+			5& 1.7  & 1     & M     & 22    & 7.3   & $\cdots$  \\
+			$\vdots$  & $\vdots$  & $\vdots$    & $\vdots$   & $\vdots$     & $\vdots$     & $\ddots$  \\
+			\hline
+			\hline
+		\end{tabular}%
+		\label{tab:ITRDataProblem}%
+	\end{table}%
+	\begin{variableblock}{Research Question}{bg=LillyBlue25,fg=black}{bg=LillyBlue,fg=black}
+		Based on these data, how can we treat a new patient?  \\
+		In other words, how can we learn a treatment assignment rule that, if followed by the entire population of certain patients, would lead to the best outcome on average?
+	\end{variableblock}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Other Examples: Car Purchase}
+	\begin{table}[htbp]
+		\centering
+		\caption{My Friends' Rating of Their First Cars}
+		\begin{tabular}{c|c|c|cccc}
+			\hline
+			\hline
+			ID& Satisfaction    & Car Type   & Gender    & Age    &  Mileage per Day   & $\cdots$ \\
+			\hline
+			1& 90\%  & Focus     & F     & 26    & 7.8   & $\cdots$ \\
+			2 &85\%  & Corolla     & M     & 28    & 8.2   & $\cdots$  \\
+			3 &70\%  & Civic    & M     & 31    & 8.9   & $\cdots$  \\
+			4&75\%  & Corolla     & F     & 35    & 9.4   & $\cdots$  \\
+			5& 60\%  & Civic    & M     & 22    & 7.3   & $\cdots$  \\
+			$\vdots$  & $\vdots$  & $\vdots$    & $\vdots$   & $\vdots$     & $\vdots$     & $\ddots$  \\
+			\hline
+			\hline
+		\end{tabular}%
+		\label{tab:ITRDataProblem2}%
+	\end{table}%
+	Learning from these data, what car should I purchase?
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Other Examples:  Connected Care Device}
+	\begin{table}[htbp]
+		\centering
+		\caption{Sending Out a Reminder at Right Time for Right Patients}
+		\begin{tabular}{c|c|c|cccc}
+			\hline
+			\hline
+			ID&  Cost   & Send Reminder & FBG  &  3 Hypo & SU & $\cdots$ \\
+			\hline
+			1& \$875  & 0  & 159   & Y  &  Y  & $\cdots$ \\
+			2 &  \$475 & 0  &   170   & Y  & N & $\cdots$  \\
+			3 & \$150 & 1  & 160   & N   & N& $\cdots$  \\
+			4& \$375 & 1   & 182  & Y  & Y   & $\cdots$  \\
+			5& \$525 & 1  & 110     & N  & Y   & $\cdots$  \\
+			$\vdots$  & $\vdots$  & $\vdots$    & $\vdots$   & $\vdots$     & $\vdots$     & $\ddots$  \\
+			\hline
+			\hline
+		\end{tabular}%
+		\label{tab:ITRDataProblem5}%
+	\end{table}%
+	
+	Learning from these data, how can we develop a smart reminder to recommend patients to see their doctor within the next 3 weeks?
+\end{frame}
+
+\begin{frame}
+	\frametitle{Other Examples: Choice of Digital Biomarkers}
+	\begin{table}[htbp]
+		\centering
+		\caption{Choose Right Digital Biomarker for Alzheimer's Disease}
+		\begin{tabular}{c|c|c|cccc}
+			\hline
+			\hline
+			ID&  Accuracy   & Digital Biomarker  & State  &  Age  & Gender & $\cdots$ \\
+			\hline
+			1& 70\%  & App No.1   & Mild    & 63   & F   & $\cdots$ \\
+			2 & 83\%\  & App No.2     &   Moderate   & 72    & F   & $\cdots$  \\
+			3 & 77\% & App No.1   & Mild     & 65    & M   & $\cdots$  \\
+			4& 62\% & App No.3     & Severe    & 86    & M   & $\cdots$  \\
+			5& 53\%  & App No.2   & Moderate      & 77    & F   & $\cdots$  \\
+			$\vdots$  & $\vdots$  & $\vdots$    & $\vdots$   & $\vdots$     & $\vdots$     & $\ddots$  \\
+			\hline
+			\hline
+		\end{tabular}%
+		\label{tab:ITRDataProblem4}%
+	\end{table}%
+	
+	Learning from these data, which is the most accurate digital biomarker that we need to choose for a new patient based on this subject's characteristics? If we can only choose one digital biomarker for patients with mild  Alzheimer's Disease which one we need to utilize?
+\end{frame}
+
+
+
+
+
+\begin{frame}
+	\frametitle{Other Examples: Business Investment}
+	\begin{table}[htbp]
+		\centering
+		\caption{Previous Commercial Investments and Returns}
+		\begin{tabular}{c|c|c|cccc}
+			\hline
+			\hline
+			Case ID&  Return    & Type   & Month    & Location  &  Share of Market & $\cdots$ \\
+			\hline
+			1& 1.2  & TV   & Jan     & MW   & 12.5   & $\cdots$ \\
+			2 & 0.9  & Radio     &   Oct   & NE    & 18.2   & $\cdots$  \\
+			3 & 1.4  & Web   & Nov     & WE    & 12.9   & $\cdots$  \\
+			4&1.3  & Web     & Dec    & MW    & 10.4   & $\cdots$  \\
+			5& 1.2  & Radio    & Feb     & SE    & 11.3   & $\cdots$  \\
+			$\vdots$  & $\vdots$  & $\vdots$    & $\vdots$   & $\vdots$     & $\vdots$     & $\ddots$  \\
+			\hline
+			\hline
+		\end{tabular}%
+		\label{tab:ITRDataProblem3}%
+	\end{table}%
+	
+	Learning from these data, what is our best way to invest in New England area if our product has 12\% market share in this March?
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{The following problems have a common theme}
+ \begin{itemize}
+	\item Individualized treatment recommendation
+	\item Reminder system
+	\item Clinical decision system
+	\item Recommender system
+	\item Intelligent assistant
+    \item Multichannel marketing
+	\item \emph{Subgroup identification}
+\end{itemize}
+\end{frame}
+
+
+\section{Optimal rules}
+\begin{frame}
+	\frametitle{Outline}
+	\tableofcontents[current]
+\end{frame}
+
+\begin{frame}
+\frametitle{Notation}
+\begin{itemize}
+	\item $Y \in \bbR $: a response.
+	\item $X \in \bbR^p$: a vector of covariates.
+	\item $A \in \bbZ$: an action.
+	\item $\calX$: population space, i.e. $\calX = \{X| X \in \bbR^p\} \subseteq \bbR^p$. 
+	\item $\calA$: an action space, i.e. $\calA =\{A| A \in \bbZ \} \subseteq \bbZ$.
+	\item Lower case of  $a$ is an realization of $A$.
+	\item $E$: expectation.
+\end{itemize}
+\end{frame}	
+	
+\begin{frame}
+\frametitle{Optimal rule and the Fisher's Consistency}
+\begin{variableblock}{Optimal Rule}{bg=LillyRed25,fg=black}{bg=LillyRed,fg=black}
+\begin{align*}
+\calD^*(X) & = \argmax_{a \in \calA}  E\{Y|X, A=a\}
+\end{align*} 
+\vspace{0.05in}
+\end{variableblock}
+
+\pause
+\begin{variableblock}{The Fisher's Consistency}{bg=LillyGreen25,fg=black}{bg=LillyGreen,fg=black}
+	\begin{align*}
+	\hat{\calD}(X) & \conP \calD^*(X), \quad \forall X \in \calX. 
+	\end{align*} 
+	\vspace{0.03in}
+\end{variableblock}
+\end{frame}	
+
+
+\section{Training data}
+
+
+\begin{frame}
+\frametitle{Data generation models}
+
+\begin{description}
+	\item[Generalized Linear Model:] 
+\begin{eqnarray*}
+	\ell\{E(Y|X)\} &=& \beta_0 + g(X) + t(A) + d(X,A),
+\end{eqnarray*}
+where $\ell(\cdot)$ is a monotone link function. 
+\item[Transformed Response Model:] 
+\begin{eqnarray*}
+	\tau(Y) &=& \beta_0 + g(X) + t(A) + d(X,A)+\epsilon,
+\end{eqnarray*}
+where $\tau$ is a monotone transformation function, and $\epsilon \sim (0,\sigma^2)$ which can be nonparametric.
+\item[Intensity Function Model:] 
+\begin{eqnarray*}
+	\lambda_i(t) &=& \lambda_0(t)\gamma_i \exp\{g(X_i)+ t(A)+d(X_i,A)\},
+\end{eqnarray*}
+where $\lambda_0(t)$ is a baseline hazard or intensity function, and $\gamma_i$ is a frailty term, e.g. $\gamma_i \sim \mbox{Gamma}(1,\sigma^2)$. 
+\end{description}	
+	
+\end{frame}	
+
+\begin{frame}
+	\frametitle{Outline}
+	\tableofcontents[current]
+\end{frame}
+
+\begin{frame}
+	\frametitle{Training data}
+	\begin{table}[htbp]
+		\centering
+		\caption{An illustration training dataset}
+		\begin{tabular}{c|c|c|cccc}
+			\hline
+			\hline
+		   ID & $Y$     & $A$   & $X_1$    & $X_2$    & $X_3$    & $\cdots$ \\
+		\hline
+		1&1.5  & 1     & 0     & 26    & 7.8   & $\cdots$ \\
+		2&1.2  & 2     & 1     & 28    & 8.2   & $\cdots$  \\
+		3&0.3  & 3     & 1     & 31    & 8.9   & $\cdots$  \\
+		4&0.9  & 2     & 0     & 35    & 9.4   & $\cdots$  \\
+		$\vdots$ & $\vdots$    & $\vdots$    & $\vdots$   & $\vdots$     & $\vdots$     & $\ddots$  \\
+		n & 1.6 & 2 & 0 & 29 & 8.1 & $\cdots$ \\
+			\hline
+			\hline
+		\end{tabular}%
+		\label{tab:ITRDataProblem}%
+	\end{table}%
+	\begin{variableblock}{Research Question}{bg=LillyBlue25,fg=black}{bg=LillyBlue,fg=black}
+		Based on these data, how can we treat a new patient?  \\
+		In other words, how can we learn a treatment assignment rule that, if followed by the entire population of certain patients, would lead to the best outcome on average?
+	\end{variableblock}
+\end{frame}
+
+\section{Testing data}
+\begin{frame}
+	\frametitle{Outline}
+	\tableofcontents[current]
+\end{frame}
+
+\begin{frame}
+	\frametitle{Testing data set: Context}
+\begin{table}[htbp]
+	\centering
+	\caption{\emph{An illustration testing dataset: context data (testing)} }
+	\begin{tabular}{c|cccc}
+		\hline
+		\hline
+		ID &  $X_1$    & $X_2$    & $X_3$    & $\cdots$ \\
+		\hline
+		1& 0     & 26    & 7.8   & $\cdots$ \\
+		2& 1     & 28    & 8.2   & $\cdots$  \\
+		3& 1     & 31    & 8.9   & $\cdots$  \\
+		4& 0     & 35    & 9.4   & $\cdots$  \\
+		5& 1     & 22    & 7.3   & $\cdots$  \\
+		$\vdots$ &  $\vdots$   & $\vdots$     & $\vdots$     & $\ddots$  \\
+		N &  0 & 29 & 8.1 & $\cdots$ \\
+		\hline
+		\hline
+	\end{tabular}%
+	\label{tab:TestingDataExample1}%
+\end{table}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Testing data set: Potential outcomes}
+	
+\begin{table}[htbp]
+	\centering
+	\caption{\emph{An illustration testing dataset: potential outcome data(testing).} $Y(a)$ is the potential outcome taking action $a$, $A$ is the observed treatment assignment, and $A^o$ is the theoretical optimal treatment assignment.}
+	\begin{tabular}{c|cccc|cc}
+		\hline
+		\hline
+		ID &  $Y(1)$    & $Y(2)$    & $\cdots$  & $Y(k)$ & $A$ & $A^o$   \\
+		\hline
+		1& 1.2    & 1.5    &  $\cdots$  & 1.3 & 3 & 2 \\
+		2& 1.3    & 1.1    &  $\cdots$  & 1.4 & 2 & 3 \\
+		3& 0.9    & 0.8    &  $\cdots$  & 1.7 & 1 & 3 \\
+		4& 1.8    & 1.6    &  $\cdots$  & 1.2 & 1 & 1 \\
+		5& 1.4    & 1.4    &  $\cdots$  & 1.5 & 2 & 2 \\
+		$\vdots$ &  $\vdots$   & $\vdots$     & $\ddots$     & $\vdots$ &  $\vdots$   & $\vdots$ \\
+		N & 1.7    & 1.4    &  $\cdots$  & 1.1 & 3 & 1 \\
+		\hline
+		\hline
+	\end{tabular}%
+	\label{tab:TestingDataExample2}%
+\end{table}
+	
+\end{frame}
+
+\section{Evaluation process and criteria}
+
+\begin{frame}
+	\frametitle{Evaluation Process}
+	We (simulator) have access to all potential outcomes for each patient (in real data only one outcome is observed). Suppose, we would like to evaluate a $\calD(\cdot): \calX \mapsto \calA$. 
+	\begin{description}
+		\item[Step 1:] We send training data to the modelers, and they train a decision rule $\hat{\calD}(\cdot)$.
+		\item[Step 2:] We send the context data (testing) to the modelers, and they apply $\hat{\calD}(\cdot)$ on the context data (testing), and they send us a vector $\hat{A}$ with action for each subject.
+		\item[Step 3:] We use their $\hat{A}$ and potential outcome (testing) data to calculate scores based on different evaluation criteria.
+	\end{description}
+\end{frame}	
+
+\begin{frame}
+	\frametitle{Evaluation criteria}
+		\begin{description}
+		\item[Primary criteria:]  The average benefit $N^{-1}\sum_{i=1}^{N} \sum_{a=1}^k Y_{i}(a) I\{a=\hat{A}_i\}$.
+		\item[Secondary criteria 1:] Proportion of misclassification $N^{-1}\sum_{i=1}^{N} I\{A^o_i \neq \hat{A}_i\}$.
+		\item[Secondary criteria 2:] Average of proportion of misclassification
+		\begin{eqnarray*}
+			k^{-1} \sum_{a=1}^k \left\{\sum_{i=1}^{N} I(A^o_i=a)\right\}^{-1} \sum_{i=1}^{N} I\{A^o_i \neq  \hat{A}_i, A^o_i=a\}.
+		\end{eqnarray*}
+	\end{description}
+\end{frame}	
+
+
+
+
+\section{Example}
+\begin{frame}
+	\frametitle{Outline}
+	\tableofcontents[current]
+\end{frame}
+
+\begin{frame}
+	\frametitle{Example}
+	\begin{table}[htbp]
+		\centering
+		\caption{\emph{An illustration of using the potential outcome data (testing) to evaluate solution}. }
+		\begin{tabular}{c|cc|ccc}
+			\hline
+			\hline
+			ID &  $Y(1)$    & $Y(2)$    & $A$ & $A^o$ & $\hat{A} $  \\
+			\hline
+			1& 1.2    & 1.5    &   1& 2 &2 \\
+			2& 1.3    & 1.1    &  2 & 1 &1\\
+			3& 0.9    & 0.8    &    1 & 2 &1 \\
+			4& 1.8    & 1.6    &   2 & 1 &2 \\
+			5& 1.4    & 1.4    &  2 & 2 &2 \\
+			$\vdots$ &  $\vdots$   & $\vdots$     & $\vdots$     & $\vdots$ &  $\vdots$    \\
+			N & 1.7    & 1.4    &   2 & 1 &1\\
+			\hline
+			\hline
+		\end{tabular}%
+		\label{tab:TestingDataExample2}%
+	\end{table}
+The observed benefit is $V=\frac{1}{N} \sum (1.2+1.1+0.9+1.6+1.4+\cdots+1.4)$, and theoretical optimal value is $V^o=\frac{1}{N}  \sum (1.5+1.3+0.8+1.8+1.4+\cdots+1.7)$, and the estimated value is $\hat{V}=\frac{1}{N}  \sum (1.5+1.3+0.9+1.6+1.4+\cdots+1.7)$.
+\end{frame}
+
+\end{document}
