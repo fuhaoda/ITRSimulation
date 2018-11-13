@@ -99,7 +99,7 @@ class ITRDataTable:
         if self.y.shape[1] == 1:
             self.df.insert(loc=0, column="Y", value=self.y[:, 0])
         else:
-            for i in range(self.y.shape[1]):
+            for i in range(self.y.shape[1]-1,-1,-1):
                 self.df.insert(loc=0, column=f"Y_{i}", value=self.y[:, i])
    
     def get_testcol(self):
