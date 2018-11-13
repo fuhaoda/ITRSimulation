@@ -98,14 +98,6 @@ def main():
                          generator=g)
     s.generate()
     s.export(OUTPUT_PREFIX)
-    test_ys = s.tys()
-    testing_size = test_ys.shape[0]
-    test_azero = s.azero(test_ys)
-    test_ys_df = pd.DataFrame(test_ys.reshape(testing_size, -1),
-                              columns=s.get_testcol())
-    test_ys_df['A'] = s.testing_data.act
-    test_ys_df['A0'] = test_azero
-    test_ys_df.to_csv(f"{OUTPUT_PREFIX}_test_Ys.csv", index_label="SubID")
 
 
 if __name__ == "__main__":
