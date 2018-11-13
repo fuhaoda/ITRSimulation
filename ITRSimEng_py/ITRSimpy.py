@@ -172,36 +172,12 @@ class SimulationEngine:
             None
         """
         self.training_data.gen_x(self.x_func)
-        self.training_data.fillup_x()
         self.training_data.gen_a(self.a_func)
-        self.training_data.fillup_a()
         self.training_data.gen_y(self.y_func)
-        self.training_data.fillup_y()
         
         self.testing_data.gen_x(self.x_func)
-        self.testing_x = self.testing_data
-        self.testing_x.fillup_x()
-        self.testing_ys = self.testing_data
-        self.testing_ys.gen_ys(self.y_func)
-        self.testing_ys.fillup_ys()
-        
+        self.testing_data.gen_ys(self.y_func)
 
-#    def tys(self):
-#        """
-#        Generate testing ys
-#        :return: n x n_act matrix
-#        """
-#        self.testing_data.fillup_a(self.a_func)
-#        y_matrix = np.zeros((self.testing_size, self.n_act, self.ydim))
-#        for trt in range(1, self.n_act + 1):
-#            y_matrix[:, trt - 1] = self.y_func(self.testing_data.x,
-#                                               np.ones(self.testing_size).reshape(-1, 1) * trt,
-#                                               self.ydim)
-#        return y_matrix
-#
-#    def azero(self, y_matrix):
-#        y_sum = np.sum(y_matrix, axis=-1)
-#        return np.argmax(y_sum, axis=1) + 1
 
     def export(self, desc):
         """Save the training and testing data to files.
@@ -212,7 +188,17 @@ class SimulationEngine:
         Returns:
             None
         """
+        self.training_data.fillup_x()
+        self.training_data.fillup_a()
+        self.training_data.fillup_y()
         self.training_data.export(desc + "_train.csv")
-        self.testing_x.export(desc + "_test_X.csv")
-        self.testing_ys.export(desc + "_test_Ys.csv")
+        
+        self.testing_data.fillup_x()
+        self.testing_data.export(desc + "_test_X.csv")
+        
+        test_ys_df = pd.DataFrame(self.testing_data.ys.reshape(self.testing_size, -1),
+                                  columns=self.testing_data.get_testcol())
+        #test_ys_df['A'] = self.testing_data.act
+        test_ys_df['A0'] = self.testing_data.azero
+        test_ys_df.to_csv(desc + "_test_Ys.csv", index_label="SubID")
         
