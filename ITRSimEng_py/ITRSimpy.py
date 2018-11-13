@@ -48,15 +48,16 @@ class ITRDataTable:
         self.array = np.ones((sample_size, 1))
         self.df = None
         self.x = None
+        self.x_title = None
         self.act = None
         self.y = None
         self.ys = None
         self.azero = None
         
     def gen_x(self, x_func):
-        x_title, self.x = x_func(self.sample_size, self.engine)
-
-    def fillup_x(self, x_func):
+        self.x_title, self.x = x_func(self.sample_size, self.engine)
+        
+    def fillup_x(self):
         """Generate data using the provided data generator
 
         Parameters:
@@ -64,28 +65,36 @@ class ITRDataTable:
         Returns:
             None
         """
-        x_title, self.x = x_func(self.sample_size, self.engine)
-        self.df = pd.DataFrame(self.x, columns=x_title)
+        assert not np.all(self.x == None)
+        self.df = pd.DataFrame(self.x, columns=self.x_title)
         self.array = self.x
+        
+    
+    def gen_a(self, a_func):
+        self.act = a_func(self.x, self.n_act)
 
-    def fillup_a(self, a_func):
+    def fillup_a(self):
         """Fill up A according to the indicated model parameters (beta) and number of treatment options (n)
 
         :param beta: (list) The model parameter to generate A from X, should be the same dimension of X
 
         :return: None
         """
-        self.act = a_func(self.x, self.n_act)
+        assert not np.all(self.act == None)
         self.array = np.append(self.array, self.act, axis=1)
         self.df.insert(loc=0, column='Trt', value=self.act.flatten())
-
-    def fillup_y(self, y_func):
+        
+    def gen_y(self, y_func):
+        assert not np.all(self.x == None)
+        assert not np.all(self.act == None)
+        self.y = y_func(self.x, self.act, self.ydim)
+        
+    def fillup_y(self):
         """
 
         :param y_func:
         :return:
         """
-        self.y = y_func(self.x, self.act, self.ydim)
         assert self.ydim == self.y.shape[1]
         if self.y.shape[1] == 1:
             self.df.insert(loc=0, column="Y", value=self.y[:, 0])
@@ -98,11 +107,8 @@ class ITRDataTable:
             return [f"Y({act})" for act in range(1, self.n_act + 1)]
         else:
             return [f"Y({act})_{ndim}" for act in range(1, self.n_act + 1) for ndim in range(self.ydim)]
-            
-    def fillup_ys(self, y_func):
-        """
-        Fill up ys of all the treatment. Used for test dataset
-        """
+    
+    def gen_ys(self, y_func):
         y_matrix = np.zeros((self.sample_size, self.n_act, self.ydim))
         for trt in range(1, self.n_act + 1):
             y_matrix[:, trt - 1] = y_func(self.x,
@@ -110,7 +116,13 @@ class ITRDataTable:
                                                self.ydim)
         y_sum = np.sum(y_matrix, axis=-1)
         self.azero = np.argmax(y_sum, axis=1) + 1
-        test_ys_df = pd.DataFrame(y_matrix.reshape(self.sample_size, -1),
+        self.ys = y_matrix
+        
+    def fillup_ys(self):
+        """
+        Fill up ys of all the treatment. Used for test dataset
+        """
+        test_ys_df = pd.DataFrame(self.ys.reshape(self.sample_size, -1),
                                   columns=self.get_testcol())
         # test_ys_df['A'] = self.act #no need to assign act here.
         test_ys_df['A0'] = self.azero
@@ -148,7 +160,6 @@ class SimulationEngine:
         self.testing_size = testing_size
         self.training_data = ITRDataTable(training_size, n_act, ydim, generator)
         self.testing_data = ITRDataTable(testing_size, n_act, ydim, generator)
-        self.testing_ys = ITRDataTable(testing_size, n_act, ydim, generator)
 
 
     def generate(self):
@@ -160,13 +171,20 @@ class SimulationEngine:
         Returns:
             None
         """
-
-        self.training_data.fillup_x(self.x_func)
-        self.training_data.fillup_a(self.a_func)
-        self.training_data.fillup_y(self.y_func)
-        self.testing_data.fillup_x(self.x_func)
-        self.testing_ys.gen_x(self.x_func)
-        self.testing_ys.fillup_ys(self.y_func)
+        self.training_data.gen_x(self.x_func)
+        self.training_data.fillup_x()
+        self.training_data.gen_a(self.a_func)
+        self.training_data.fillup_a()
+        self.training_data.gen_y(self.y_func)
+        self.training_data.fillup_y()
+        
+        self.testing_data.gen_x(self.x_func)
+        self.testing_x = self.testing_data
+        self.testing_x.fillup_x()
+        self.testing_ys = self.testing_data
+        self.testing_ys.gen_ys(self.y_func)
+        self.testing_ys.fillup_ys()
+        
 
 #    def tys(self):
 #        """
@@ -195,6 +213,6 @@ class SimulationEngine:
             None
         """
         self.training_data.export(desc + "_train.csv")
-        self.testing_data.export(desc + "_test_X.csv")
+        self.testing_x.export(desc + "_test_X.csv")
         self.testing_ys.export(desc + "_test_Ys.csv")
         
