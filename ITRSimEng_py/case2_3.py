@@ -59,18 +59,18 @@ def x_func(sample_size, dg):
     return x_title, x_array
 
 
-def a_func(x, n_resp):
+def a_func(x, n_act):
     """
 
     :param x: the input X matrix for the a_function
-    :param n_resp: the number of possible responses, i.e. treatment options
+    :param n_act: the number of possible responses, i.e. treatment options
     :return: a n x 1 matrix of A
     """
     b = 6.5
     i = 1 # the related column of x in determining p
     z = -0.5 * b + b * x[:, i-1]
     p = 1 / (1 + np.exp(-z))
-    a = np.random.binomial(n_resp - 1, p) + 1
+    a = np.random.binomial(n_act - 1, p) + 1
     return a.reshape(-1, 1)
 
 
@@ -98,20 +98,11 @@ def main():
                          y_func=y_func,
                          training_size=TRAINING_SIZE,
                          testing_size=TESTING_SIZE,
-                         n_resp=NUMBER_RESPONSE,
+                         n_act=NUMBER_RESPONSE,
                          ydim=Y_DIMENSION,
                          generator=g)
     s.generate()
     s.export(OUTPUT_PREFIX)
-    test_ys = s.tys()
-    testing_size = test_ys.shape[0]
-    test_azero = s.azero(test_ys)
-    test_ys_df = pd.DataFrame(test_ys.reshape(testing_size, -1),
-                              columns=s.get_testcol())
-    test_ys_df['A'] = s.testing_data.act
-    test_ys_df['A0'] = test_azero
-    test_ys_df.to_csv(f"{OUTPUT_PREFIX}_test_Ys.csv", index_label="SubID")
-
 
 if __name__ == "__main__":
     main()

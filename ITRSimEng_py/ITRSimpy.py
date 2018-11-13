@@ -45,7 +45,6 @@ class ITRDataTable:
         self.n_act = n_act
         self.ydim = ydim
         self.engine = engine
-        self.array = np.ones((sample_size, 1))
         self.df = None
         self.x = None
         self.x_title = None
@@ -67,8 +66,6 @@ class ITRDataTable:
         """
         assert not np.all(self.x == None)
         self.df = pd.DataFrame(self.x, columns=self.x_title)
-        self.array = self.x
-        
     
     def gen_a(self, a_func):
         self.act = a_func(self.x, self.n_act)
@@ -81,7 +78,6 @@ class ITRDataTable:
         :return: None
         """
         assert not np.all(self.act == None)
-        self.array = np.append(self.array, self.act, axis=1)
         self.df.insert(loc=0, column='Trt', value=self.act.flatten())
         
     def gen_y(self, y_func):
