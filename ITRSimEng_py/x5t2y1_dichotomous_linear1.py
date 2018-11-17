@@ -1,16 +1,27 @@
+# -*- coding: utf-8 -*-
 """
-This is an implecation of the simulation setting of "improve numerical stability" of
+This is an implecation of the simulation setting of "Convergence in observational studies" of
 "Estimating optimal treatment regimes via sbugroup identification in randomized contro trials and observational studies"
+ 
+tunning parameter: b, i in a_func
+                   theta in y_func
 
+@author: yujiad2
 """
+
 import sys
 from ITRSimpy import *
+
+
+# This is an example of using ITR Simulation Engine
+# The current a_func is a linear model of X and the y_func is a linear model of X and A
+# User can define customized a_func and y_func
 
 TRAINING_SIZE = 500
 TESTING_SIZE = 50000
 NUMBER_RESPONSE = 2
 Y_DIMENSION = 1
-OUTPUT_PREFIX = "case2_1"
+OUTPUT_PREFIX = "001_w"
 
 class CaseDataGenerator(DataGenerator):
     """
@@ -28,7 +39,7 @@ def x_func(sample_size, dg):
 
     # User need to define the dimension (dim) and boundary (low and high) of the random generated numbers
     # User can also change the title of the X matrix
-    cont_array = dg.generate('cont', sample_size, dim=4, low=0, high=1)
+    cont_array = dg.generate('cont', sample_size, dim=5, low=0, high=1)
     cont_title = [f"X_Cont{i}" for i in range(cont_array.shape[1])]
     ord_array = dg.generate('ord', sample_size, dim=0, low=0, high=1)
     ord_title = [f"X_Odd{i}" for i in range(ord_array.shape[1])]
@@ -50,28 +61,28 @@ def x_func(sample_size, dg):
 
 def a_func(x, n_act):
     """
-    randomly assigned with p=0.5
 
     :param x: the input X matrix for the a_function
     :param n_act: the number of possible responses, i.e. treatment options
     :return: a n x 1 matrix of A
     """
-    p = 0.5*np.ones((x.shape[0],1))
+    b = 6.5
+    i = 1 # the related column of x in determining p
+    z = -0.5 * b + b * x[:, i-1]
+    p = 1 / (1 + np.exp(-z))
     a = np.random.binomial(n_act - 1, p) + 1
     return a.reshape(-1, 1)
 
 
 def y_func(x, a, ydim):
     """
-    Y = beta_0 + sign(X_2-0.5) + A*1{X_1<=0.6} +(1-A)*1{X_1>0.6}
-    :param x: the input X matrix for the a_function
-    :param a: a n x 1 matrix of A
-    :return:
+    Treatment a coded as 1/2
     """
-    beta_0 = 5*np.ones((x.shape[0],1))
-    y = beta_0 + np.sign(x[:,1] - 0.5).reshape(-1,1) + \
-        np.multiply((a-1), (x[:,0] <= 0.6).reshape(-1,1)) + \
-        np.multiply((2-a), (x[:,0] > 0.6).reshape(-1,1))
+    theta = 0.5
+    y = 1 + 2 * x[:, 1].reshape(-1,1) + \
+        theta * np.multiply((a-1), (x[:, 0] > 0.5).reshape(-1,1)) + \
+        theta * np.multiply((2-a), (x[:, 0] <= 0.5).reshape(-1,1)) + \
+        np.random.randn(x.shape[0], ydim)
     return y
 
 
@@ -92,7 +103,6 @@ def main():
                          generator=g)
     s.generate()
     s.export(OUTPUT_PREFIX)
-
 
 if __name__ == "__main__":
     main()

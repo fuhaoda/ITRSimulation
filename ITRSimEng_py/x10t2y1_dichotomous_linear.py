@@ -20,7 +20,7 @@ TRAINING_SIZE = 500
 TESTING_SIZE = 50000
 NUMBER_RESPONSE = 2
 Y_DIMENSION = 1
-OUTPUT_PREFIX = "case_2_4"
+OUTPUT_PREFIX = "001_x10t2y1_dichotomous_linear"
 
 class CaseDataGenerator(DataGenerator):
     """

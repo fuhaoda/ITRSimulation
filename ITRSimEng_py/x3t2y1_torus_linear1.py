@@ -18,7 +18,7 @@ TRAINING_SIZE = 500
 TESTING_SIZE = 50000
 NUMBER_RESPONSE = 2
 Y_DIMENSION = 1
-OUTPUT_PREFIX = "donut_shape"
+OUTPUT_PREFIX = "001_x3t2y1_torus_linear1"
 
 class CaseDataGenerator(DataGenerator):
     """

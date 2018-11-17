@@ -271,26 +271,83 @@ k^{-1} \sum_{a=1}^k \left\{\sum_{i=1}^{N} I(A^o_i=a)\right\}^{-1} \sum_{i=1}^{N}
 \bf \Large Appendix A: ***
 \end{center}
 
+
+\section*{Naming format}
+\texttt{001\_x4t2y1\_dichotomous\_linear1\_train.csv}
+\begin{itemize}
+	\item \texttt{001}: Dataset ID
+	\item \texttt{x4}: The dimension of the covariate $X$ is 4
+	\item \texttt{t2}: 2 treatments
+	\item \texttt{y1}: The dimension of Y is 1
+	\item \texttt{dichotomous}: Description of the subgrouping criterion of $X$.
+	\item \texttt{linear}: Description of the link function in the formulation of $Y$, e.g. \texttt{logit} for binary $Y$.
+	\item \texttt{1}: Subcase ID
+	\item \texttt{train}: Training set. \texttt{test\_X} for testing data with only covariates; \texttt{test\_Ys} for the response of the testing set, including the response of all the responses and the optimal decision $Y^0$
+\end{itemize}
 \section*{Simulation Settings and True Parameters (Confidential)} \label{sec.SimSettings}
 
-\subsection{t2r1dichotomized}
-\subsection{t2o1dicchotomized}
-\subsection{t2o1linear}
-\subsection{t2o1parabola}
-\subsection{t2o1ring}
-\subsection{t3r1dichotomized}
-\subsection{t3r1ring}
-\subsection{t3o1ring}
-\subsection{t9r1bump}
-\subsection{t9o1bump}
+\subsection*{x4t2y1\_dichotomous\_linear1}
+Implement the simulation setting described in the "Improve numerical stability" part of \cite{fu2016estimating}. The dimension of $X$ is 4 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability as 0.5. The response Y is generated from the following model:
+\begin{equation*}
+Y=\beta_0+\text{sign}(X_2-0.5)+(A-1)\cdot I_{X_1\le 0.6}+(2-T)\cdot I_{X_1>0.6},
+\end{equation*} 
+where $\beta_0$ is an arbitrary number, default as 5.
+
+\subsection*{x4t2y1\_dichotomous\_linear2}
+Implement the simulation setting described in the "Convergence in RCTs" part of \cite{fu2016estimating}. The dimension of $X$ is 4 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability as 0.5. The response Y is generated from the following model:
+\begin{equation*}
+Y=\text{sign}(X_2-0.5)+\theta\cdot (A-1) \cdot I_{X\in D} + \theta \cdot(2-A) \cdot I_{X\in D^C}+\epsilon,
+\end{equation*}
+where $\epsilon$ is i.i.d. $N(0,1)$. The true subgroup $D$ is defined by different depths from 1 to 3 as
+\begin{itemize}
+	\item When depth is equal to 1, $A={X:X_1<=0.6}$
+	\item When depth is equal to 2, $A={X:X_1<=0.7 \cap X_3>0.3}$
+	\item When depth is equal to 3, $A={X:X_1<=0.8 \cap X_2>0.2 \cap X_3>0.2}$.
+\end{itemize}
+$\theta$ is used to change the signal-noise ratio, ranging from 0.1 to 0.5, default as 0.3.
+
+\subsection*{x5t2y1\_dichotomous\_linear1}
+Implement the simulation setting described in the "Convergence in observational studies" part of \cite{fu2016estimating}. The dimension of $X$ is 5 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability from the following model:
+\begin{equation*}
+\text{logit}(p)=-0.5b+bX_i,
+\end{equation*} 
+where $b$ and $i$ are arbitrary, default as 6.5 and 1. The response Y is generated from the following model:
+\begin{equation*}
+Y=1+2\cdot X_2+\theta \cdot (A-1)\cdot I_{X_1>0.5}+\theta \cdot (2-A)\cdot I_{X_1\le 0.5}+\epsilon,
+\end{equation*}
+where $\epsilon$ is i.i.d. $N(0,1)$, $\theta$ is 0.5 by default.
+
+\subsection*{x10t2y1\_dichotomous\_linear}
+Implement the simulation setting described in the "Variable importance" part of \cite{fu2016estimating}. The dimension of $X$ is 10 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model:
+\begin{equation*}
+Y=\text{sign}(X_2-0.5)+0.5(A-1)\cdot I_{X\in D}+0.5\cdot(2-A)\cdot I_{X\in D^C}+\epsilon,
+\end{equation*}
+where $\epsilon$ is i.i.d. $N(0,1)$, $A={X:X_4\le 0.7\cap X_6 \le 0.7}$.
+
+\subsection*{x3t2y1\_torus\_linear1}
+$X\in \mathbb{R^3}$, and each covariate is generated from a uniform distribution $U(-1,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model:
+\begin{equation*}
+Y= \beta + 3\cdot X_3 + 0.3 \cdot (A-1) + 0.2 \cdot (2-A) +
+	\theta \cdot (A-1)\cdot I_{X\in D} + \theta \cdot (2-A) \cdot I_{X\in D^C}+\epsilon,
+\end{equation*}
+where $\epsilon$ is i.i.d. $N(0,1)$. $\beta, \theta$ are 1 and 0.8 by default. $D$ is a 3-D torus described by:
+\begin{equation*}
+(\sqrt{X_1^2+X_2^2}-R)^2+X_3^2\le r^2,
+\end{equation*}
+where $R$ and $r$ are the major radius and minor radius of the torus respectively. The shape of the torus is illustrated below:
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\linewidth]{donut_shape}
+	\caption{Illustration of a torus in $\mathbb{R}^3$. The blue and red dots denote the two true subgroups of $X$}
+\end{figure}
 
 
 
 
 
 
-\bibliographystyle{/Users/c082213/BoxSync/Help/References/asa_HD}
-\bibliography{/Users/c082213/BoxSync/Help/References/MyStats}
+\bibliographystyle{chicago}
+\bibliography{ref_simulation}
 
 
 \newpage

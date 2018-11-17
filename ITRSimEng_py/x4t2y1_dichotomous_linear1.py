@@ -1,26 +1,16 @@
-# -*- coding: utf-8 -*-
 """
-This is an implecation of the simulation setting of "Convergence in RCIs" of
+This is an implecation of the simulation setting of "improve numerical stability" of
 "Estimating optimal treatment regimes via sbugroup identification in randomized contro trials and observational studies"
- 
-tunning parameter: theta, depth in y_func
 
-@author: yujiad2
 """
-
 import sys
 from ITRSimpy import *
-
-
-# This is an example of using ITR Simulation Engine
-# The current a_func is a linear model of X and the y_func is a linear model of X and A
-# User can define customized a_func and y_func
 
 TRAINING_SIZE = 500
 TESTING_SIZE = 50000
 NUMBER_RESPONSE = 2
 Y_DIMENSION = 1
-OUTPUT_PREFIX = "case_2_2"
+OUTPUT_PREFIX = "001_x4t2y1_dichotomous_linear1"
 
 class CaseDataGenerator(DataGenerator):
     """
@@ -66,36 +56,22 @@ def a_func(x, n_act):
     :param n_act: the number of possible responses, i.e. treatment options
     :return: a n x 1 matrix of A
     """
-    p = 0.5 * np.ones((x.shape[0],1))
+    p = 0.5*np.ones((x.shape[0],1))
     a = np.random.binomial(n_act - 1, p) + 1
     return a.reshape(-1, 1)
 
 
 def y_func(x, a, ydim):
     """
-    Treatment a coded as 1/2
+    Y = beta_0 + sign(X_2-0.5) + A*1{X_1<=0.6} +(1-A)*1{X_1>0.6}
+    :param x: the input X matrix for the a_function
+    :param a: a n x 1 matrix of A
+    :return:
     """
-    depth = 1
-    theta = 0.3
-    if depth == 1:
-        y = np.sign(x[:, 1] - 0.5).reshape(-1, 1) + \
-            theta * np.multiply(a-1, (x[:, 0] <= 0.6).reshape(-1,1)) + \
-            theta * np.multiply((2-a), (x[:, 0] > 0.6).reshape(-1,1)) + \
-            np.random.randn(x.shape[0], ydim)
-    elif depth == 2:
-        y = np.sign(x[:, 1] - 0.5).reshape(-1, 1) + \
-            theta * np.multiply(a-1, np.logical_and(x[:, 0] <= 0.7, x[:, 2] > 0.3).reshape(-1,1)) + \
-            theta * np.multiply((2-a), np.logical_xor(x[:, 0] <= 0.7, x[:, 2] > 0.3).reshape(-1,1)) + \
-            np.random.randn(x.shape[0], ydim)
-            
-    elif depth == 3:
-        y = np.sign(x[:, 1] - 0.5).reshape(-1, 1) + \
-            theta * np.multiply(a-1, np.logical_and.reduce((x[:, 0] <= 0.8, x[:, 1] > 0.2, x[:, 2] > 0.2)).reshape(-1,1)) + \
-            theta * np.multiply((2-a), np.logical_not(np.logical_and.reduce((x[:, 0] <= 0.8, x[:, 1] > 0.2, x[:, 2] > 0.2)).reshape(-1,1))) + \
-            np.random.randn(x.shape[0], ydim)
-            
-    else:
-        raise ValueError('The depth takes only 1, 2, 3')
+    beta_0 = 5*np.ones((x.shape[0],1))
+    y = beta_0 + np.sign(x[:,1] - 0.5).reshape(-1,1) + \
+        np.multiply((a-1), (x[:,0] <= 0.6).reshape(-1,1)) + \
+        np.multiply((2-a), (x[:,0] > 0.6).reshape(-1,1))
     return y
 
 
