@@ -18,6 +18,7 @@ class CaseDataGenerator(DataGenerator):
     """
     pass
 
+
 def x_func(sample_size, dg):
     """
      This func will return the X matrix
@@ -47,8 +48,8 @@ def x_func(sample_size, dg):
 
     return x_title, x_array
 
-#todo: need to pass random state in.
-def a_func(x, n_act):
+
+def a_func(x, n_act, dg):
     """
     Users define the function of A here. The example below uses a linear function:
         P(A) = sigmoid( -2.5 + 3*X0 + 0*X1 + 1*X2 + 1*X3 + 0*X4 + 0*X5)
@@ -62,11 +63,11 @@ def a_func(x, n_act):
     assert len(beta_a) == x.shape[1]
     z = np.matmul(x, np.array(beta_a).reshape(-1, 1))
     p = 1 / (1 + np.exp(-z))
-    a = np.random.binomial(n_act-1, p)+1
+    a = dg.binom(n_act-1, p)+1
     return a.reshape(-1, 1)
 
-#todo: need to pass random state in.
-def y_func(x, a, ydim):
+
+def y_func(x, a, ydim, dg):
     """
     Users define the function of Y here. The example below uses two linear functions to calculate
     the two dimension of Y:
@@ -85,7 +86,7 @@ def y_func(x, a, ydim):
     assert beta_t.shape == (ydim, x.shape[1] + 1)
 
     y = np.matmul(np.append(x, a, axis=1), beta_t.T) + \
-        np.random.randn(x.shape[0], ydim)
+        dg.randn(x.shape[0], ydim)
     return y
 
 

@@ -22,10 +22,14 @@ class DataGenerator:
             return self.state.uniform(low, high, size=(sample_size, dim))
         elif var_type.lower() == 'ord' or var_type.lower() == 'nom':
             return self.state.randint(low, high+1, size=(sample_size, dim))
-        # elif var_type.lower() == 'act':
-        #     return self.state.randint(low, high+1, size=(sample_size, dim))
         else:
             return None
+
+    def binom(self, n, p_vector):
+        return self.state.binomial(n, p_vector)
+
+    def randn(self, sample_size, dim=1):
+        return self.state.randn(sample_size, dim)
 
 
 class ITRDataTable:
@@ -70,7 +74,7 @@ class ITRDataTable:
 
         :return: None
         """
-        self.act = a_func(self.x, self.n_act)
+        self.act = a_func(self.x, self.n_act, self.engine)
         self.array = np.append(self.array, self.act, axis=1)
         self.df.insert(loc=0, column='Trt', value=self.act.flatten())
 
@@ -80,7 +84,7 @@ class ITRDataTable:
         :param y_func:
         :return:
         """
-        self.y = y_func(self.x, self.act, self.ydim)
+        self.y = y_func(self.x, self.act, self.ydim, self.engine)
         assert self.ydim == self.y.shape[1]
         if self.y.shape[1] == 1:
             self.df.insert(loc=0, column="Y", value=self.y[:, 0])
@@ -152,7 +156,7 @@ class SimulationEngine:
         for trt in range(1, self.n_act + 1):
             y_matrix[:, trt - 1] = self.y_func(self.testing_data.x,
                                                np.ones(self.testing_size).reshape(-1, 1) * trt,
-                                               self.ydim)
+                                               self.ydim, self.generator)
         return y_matrix
 
     def azero(self, y_matrix):
