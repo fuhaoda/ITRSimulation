@@ -18,7 +18,6 @@ class CaseDataGenerator(DataGenerator):
     """
     pass
 
-
 def x_func(sample_size, dg):
     """
      This func will return the X matrix
@@ -48,7 +47,7 @@ def x_func(sample_size, dg):
 
     return x_title, x_array
 
-
+#todo: need to pass random state in.
 def a_func(x, n_act, dg):
     """
     Users define the function of A here. The example below uses a linear function:
@@ -63,10 +62,10 @@ def a_func(x, n_act, dg):
     assert len(beta_a) == x.shape[1]
     z = np.matmul(x, np.array(beta_a).reshape(-1, 1))
     p = 1 / (1 + np.exp(-z))
-    a = dg.binom(n_act-1, p)+1
+    a = dg.binomial(n_act-1, p)+1
     return a.reshape(-1, 1)
 
-
+#todo: need to pass random state in.
 def y_func(x, a, ydim, dg):
     """
     Users define the function of Y here. The example below uses two linear functions to calculate
@@ -107,15 +106,6 @@ def main():
                          generator=g)
     s.generate()
     s.export(OUTPUT_PREFIX)
-    test_ys = s.tys()
-    testing_size = test_ys.shape[0]
-    test_azero = s.azero(test_ys)
-    test_ys_df = pd.DataFrame(test_ys.reshape(testing_size, -1),
-                              columns=s.get_testcol())
-    test_ys_df['A'] = s.testing_data.act
-    test_ys_df['A0'] = test_azero
-    test_ys_df.to_csv(f"{OUTPUT_PREFIX}_test_Ys.csv", index_label="SubID")
-
 
 if __name__ == "__main__":
     main()
