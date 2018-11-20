@@ -1,22 +1,25 @@
-"""
-This is an implecation of the simulation setting of "improve numerical stability" of
-"Estimating optimal treatment regimes via sbugroup identification in randomized contro trials and observational studies"
 
-"""
 import sys
 from ITRSimpy import *
 
+
+# Simulaiton setting 2 in the reference 
+# "Learning Optimal Personalized Treatment Rules in Consideration of Benefit and Risk: 
+# With an Application to Treating Type 2 Diabetes Patients with Insulin Therapies"
+# The current a_func is Random Bernoulli with p = 0.5 
+# Number of covariates is 10 and number of true covariates is 3
+
 TRAINING_SIZE = 500
 TESTING_SIZE = 50000
-NUMBER_RESPONSE = 2
+NUMBER_ACT = 2
 Y_DIMENSION = 1
-OUTPUT_PREFIX = "case2_1"
+OUTPUT_PREFIX = "case3_2"
+
 
 class CaseDataGenerator(DataGenerator):
-    """
-    Define the Generator for each case, redefine the generate function if needed (like constrained on a donut-shape space)
-    """
-    pass
+  
+      pass
+
 
 def x_func(sample_size, dg):
     """
@@ -28,7 +31,7 @@ def x_func(sample_size, dg):
 
     # User need to define the dimension (dim) and boundary (low and high) of the random generated numbers
     # User can also change the title of the X matrix
-    cont_array = dg.generate('cont', sample_size, dim=4, low=0, high=1)
+    cont_array = dg.generate('cont', sample_size, dim=10, low=0, high=1)
     cont_title = [f"X_Cont{i}" for i in range(cont_array.shape[1])]
     ord_array = dg.generate('ord', sample_size, dim=0, low=0, high=1)
     ord_title = [f"X_Odd{i}" for i in range(ord_array.shape[1])]
@@ -48,36 +51,30 @@ def x_func(sample_size, dg):
     return x_title, x_array
 
 
-def a_func(x, n_resp):
+def a_func(x, n_act):
     """
-    randomly assigned with p=0.5
-
-    :param x: the input X matrix for the a_function
-    :param n_resp: the number of possible responses, i.e. treatment options
-    :return: a n x 1 matrix of A
+    Users define the function of A here. 
+    A takes 1 and -1 with probability 0.5
     """
-    p = 0.5*np.ones((x.shape[0],1))
-    a = np.random.binomial(n_resp - 1, p) + 1
+    p = np.ones((x.shape[0],1)) 
+    a = 2*np.random.binomial(n_act - 1, p) - 1
     return a.reshape(-1, 1)
+
 
 
 def y_func(x, a, ydim):
     """
-    Y = beta_0 + sign(X_2-0.5) + A*1{X_1<=0.6} +(1-A)*1{X_1>0.6}
-    :param x: the input X matrix for the a_function
-    :param a: a n x 1 matrix of A
-    :return:
+    Users define the function of Y here. 
+    Y = 1-2X1 + X2 -X3 + 8(1-X1^2-X2^2)A
+    
     """
-    beta_0 = 5*np.ones((x.shape[0],1))
-    y = beta_0 + np.sign(x[:,1] - 0.5).reshape(-1,1) + \
-        np.multiply((a-1), (x[:,0] <= 0.6).reshape(-1,1)) + \
-        np.multiply((2-a), (x[:,0] > 0.6).reshape(-1,1))
+    y = 1 - np.multiply(2,x[:, [0]])+ x[:, [1]] - x[:, [2]] + 8*np.multiply(1-np.power(x[:, [0]],2)-np.power(x[:, [1]],2),a) + \
+        np.random.randn(x.shape[0], ydim)
     return y
 
 
 def main():
     """
-
     :return:
     """
 
@@ -87,20 +84,16 @@ def main():
                          y_func=y_func,
                          training_size=TRAINING_SIZE,
                          testing_size=TESTING_SIZE,
-                         n_resp=NUMBER_RESPONSE,
+                         n_act=NUMBER_ACT,
                          ydim=Y_DIMENSION,
                          generator=g)
     s.generate()
     s.export(OUTPUT_PREFIX)
-    test_ys = s.tys()
-    testing_size = test_ys.shape[0]
-    test_azero = s.azero(test_ys)
-    test_ys_df = pd.DataFrame(test_ys.reshape(testing_size, -1),
-                              columns=s.get_testcol())
-    test_ys_df['A'] = s.testing_data.act
-    test_ys_df['A0'] = test_azero
-    test_ys_df.to_csv(f"{OUTPUT_PREFIX}_test_Ys.csv", index_label="SubID")
 
 
 if __name__ == "__main__":
     main()
+
+
+
+

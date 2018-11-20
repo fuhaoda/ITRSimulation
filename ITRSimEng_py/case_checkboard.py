@@ -1,22 +1,31 @@
+
+# coding: utf-8
+
+# In[7]:
+
 import sys
 from ITRSimpy import *
 
 
-# This is an example of using ITR Simulation Engine
-# The current a_func is a linear model of X and the y_func is a linear model of X and A
-# User can define customized a_func and y_func
+# This is an checkboard of using ITR Simulation Engine
+# Here we assume a two-dimensional 3*3 checkboard, 5 cells belongs to class 1 and 4 cells belongs to class 2.
+# The current a_func is Random Bernoulli with p = 0.5 and the y_func is product of X and A
+# Number of covariates is 4 and number of true covariates is 2
 
 TRAINING_SIZE = 500
 TESTING_SIZE = 50000
 NUMBER_ACT = 2
-Y_DIMENSION = 2
-OUTPUT_PREFIX = "case_cpp"
+Y_DIMENSION = 1
+OUTPUT_PREFIX = "case_checkboard"
+
 
 class CaseDataGenerator(DataGenerator):
     """
     Define the Generator for each case, redefine the generate function if needed (like constrained on a donut-shape space)
     """
     pass
+
+
 
 def x_func(sample_size, dg):
     """
@@ -30,9 +39,9 @@ def x_func(sample_size, dg):
     # User can also change the title of the X matrix
     cont_array = dg.generate('cont', sample_size, dim=4, low=0, high=1)
     cont_title = [f"X_Cont{i}" for i in range(cont_array.shape[1])]
-    ord_array = dg.generate('ord', sample_size, dim=2, low=0, high=1)
+    ord_array = dg.generate('ord', sample_size, dim=0, low=0, high=1)
     ord_title = [f"X_Odd{i}" for i in range(ord_array.shape[1])]
-    nom_array = dg.generate('nom', sample_size, dim=1, low=0, high=1)
+    nom_array = dg.generate('nom', sample_size, dim=0, low=0, high=1)
     nom_title = [f"X_Nom{i}" for i in range(nom_array.shape[1])]
 
     x_array = np.column_stack([cont_array, ord_array, nom_array])
@@ -48,42 +57,30 @@ def x_func(sample_size, dg):
     return x_title, x_array
 
 
+
 def a_func(x, n_act):
     """
-    Users define the function of A here. The example below uses a linear function:
-        A = -2.5 + 3*X0 + 0*X1 + 1*X2 + 1*X3 + 0*X4 + 0*X5
-
-    :param x: the input X matrix for the a_function
-    :param n_act: the number of possible responses, i.e. treatment options
-    :return: a n x 1 matrix of A (starging from 1)
+    Users define the function of A here. 
+    A takes 1 and -1 with probability 0.5
     """
-    beta_a = [-2.5, 3, 0, 1, 1, 0, 0]
-    z = np.matmul(x, np.array(beta_a).reshape(-1, 1))
-    p = 1 / (1 + np.exp(-z))
-    a = np.random.binomial(n_act - 1, p) + 1
+    p = np.ones((x.shape[0],1)) 
+    a = 2*np.random.binomial(n_act - 1, p) - 1
     return a.reshape(-1, 1)
 
 
 def y_func(x, a, ydim):
     """
-    Users define the function of Y here. The example below uses two linear functions to calculate
-    the two dimension of Y:
-        Y = A + (A-1.5)*[X2>0.7 && X4==0] + 2*X1 + rnorm
-    :param x: the input X matrix for the a_function
-    :param a: a n x 1 matrix of A
-    :return:
+    Users define the function of Y here. 
+    y = A*(1{X1<1/3 or X1>2/3}*1{X2<1/3 or X2>2/3})
+    
     """
-
-    y = a + \
-        np.multiply((a - 1.5), np.logical_and(x[:, [1]] > 0.7, x[:, [3]] == 0)) + \
-        np.multiply(2, x[:, [0]]) + \
-        np.random.randn(x.shape[0], ydim)
+    y = np.multiply((np.logical_or(x[:, [0]]<1/3, x[:, [0]]>2/3)*2-1)*(np.logical_or(x[:, [1]]<1/3, x[:, [1]]>2/3)*2-1),a)
     return y
+
 
 
 def main():
     """
-
     :return:
     """
 
@@ -102,3 +99,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+

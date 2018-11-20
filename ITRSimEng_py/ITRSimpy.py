@@ -40,7 +40,7 @@ class ITRDataTable:
         n_cont: Number of continuous variables
         n_ord:  Number of ordinal variables
         n_nom:  Number of nominal variables
-        n_resp: Number of responses
+        n_act: Number of responses
         df:     Data frame holding the content of the table
     """
 
@@ -49,13 +49,18 @@ class ITRDataTable:
         self.n_act = n_act
         self.ydim = ydim
         self.engine = engine
-        self.array = np.ones((sample_size, 1))
         self.df = None
         self.x = None
+        self.x_title = None
         self.act = None
         self.y = None
-
-    def fillup_x(self, x_func):
+        self.ys = None
+        self.azero = None
+        
+    def gen_x(self, x_func):
+        self.x_title, self.x = x_func(self.sample_size, self.engine)
+        
+    def fillup_x(self):
         """Generate data using the provided data generator
 
         Parameters:
@@ -63,41 +68,81 @@ class ITRDataTable:
         Returns:
             None
         """
-        x_title, self.x = x_func(self.sample_size, self.engine)
-        self.df = pd.DataFrame(self.x, columns=x_title)
-        self.array = self.x
+        assert not np.all(self.x == None)
+        self.df = pd.DataFrame(self.x, columns=self.x_title)
+    
+    def gen_a(self, a_func):
+        self.act = a_func(self.x, self.n_act)
 
-    def fillup_a(self, a_func):
+    def fillup_a(self):
         """Fill up A according to the indicated model parameters (beta) and number of treatment options (n)
 
         :param beta: (list) The model parameter to generate A from X, should be the same dimension of X
 
         :return: None
         """
+<<<<<<< HEAD
         self.act = a_func(self.x, self.n_act, self.engine)
         self.array = np.append(self.array, self.act, axis=1)
+=======
+        assert not np.all(self.act == None)
+>>>>>>> 65d1dc9bf416f7d43915616d9c15bf544725fe9f
         self.df.insert(loc=0, column='Trt', value=self.act.flatten())
-
-    def fillup_y(self, y_func):
+        
+    def gen_y(self, y_func):
+        assert not np.all(self.x == None)
+        assert not np.all(self.act == None)
+        self.y = y_func(self.x, self.act, self.ydim)
+        
+    def fillup_y(self):
         """
 
         :param y_func:
         :return:
         """
+<<<<<<< HEAD
         self.y = y_func(self.x, self.act, self.ydim, self.engine)
+=======
+>>>>>>> 65d1dc9bf416f7d43915616d9c15bf544725fe9f
         assert self.ydim == self.y.shape[1]
         if self.y.shape[1] == 1:
             self.df.insert(loc=0, column="Y", value=self.y[:, 0])
         else:
-            for i in range(self.y.shape[1]):
+            for i in range(self.y.shape[1]-1,-1,-1):
                 self.df.insert(loc=0, column=f"Y_{i}", value=self.y[:, i])
-
+   
+    def get_testcol(self):
+        if self.ydim == 1:
+            return [f"Y({act})" for act in range(1, self.n_act + 1)]
+        else:
+            return [f"Y({act})_{ndim}" for act in range(1, self.n_act + 1) for ndim in range(self.ydim)]
+    
+    def gen_ys(self, y_func):
+        y_matrix = np.zeros((self.sample_size, self.n_act, self.ydim))
+        for trt in range(1, self.n_act + 1):
+            y_matrix[:, trt - 1] = y_func(self.x,
+                                               np.ones(self.sample_size).reshape(-1, 1) * trt,
+                                               self.ydim)
+        y_sum = np.sum(y_matrix, axis=-1)
+        self.azero = np.argmax(y_sum, axis=1) + 1
+        self.ys = y_matrix
+        
+    def fillup_ys(self):
+        """
+        Fill up ys of all the treatment. Used for test dataset
+        """
+        test_ys_df = pd.DataFrame(self.ys.reshape(self.sample_size, -1),
+                                  columns=self.get_testcol())
+        # test_ys_df['A'] = self.act #no need to assign act here.
+        test_ys_df['A0'] = self.azero
+        self.df = pd.concat([self.df, test_ys_df], axis=1)
+        
+    
     def export(self, fname):
         """Save the data table to the specified file name"""
 
         self.df.index.name = 'SubID'
         self.df.to_csv(fname)
-
 
 class SimulationEngine:
     """Create training and testing tests for ITR
@@ -108,7 +153,7 @@ class SimulationEngine:
         n_cont (int): Number of continuous variables
         n_ord (int): Number of ordinal variables
         n_nom (int): Number of nominal variables
-        n_resp (int): Number of responses
+        n_act (int): Number of responses
         training_data (ITRDataTable): Training data set
         testing_data (ITRDataTable):  Testing data set
     """
@@ -125,11 +170,6 @@ class SimulationEngine:
         self.training_data = ITRDataTable(training_size, n_act, ydim, generator)
         self.testing_data = ITRDataTable(testing_size, n_act, ydim, generator)
 
-    def get_testcol(self):
-        if self.ydim == 1:
-            return [f"Y({resp})" for resp in range(1, self.n_act + 1)]
-        else:
-            return [f"Y({resp})_{ndim}" for resp in range(1, self.n_act + 1) for ndim in range(self.ydim)]
 
     def generate(self):
         """Generate training and testing data using the specified generator
@@ -140,7 +180,14 @@ class SimulationEngine:
         Returns:
             None
         """
+        self.training_data.gen_x(self.x_func)
+        self.training_data.gen_a(self.a_func)
+        self.training_data.gen_y(self.y_func)
+        
+        self.testing_data.gen_x(self.x_func)
+        self.testing_data.gen_ys(self.y_func)
 
+<<<<<<< HEAD
         self.training_data.fillup_x(self.x_func)
         self.training_data.fillup_a(self.a_func)
         self.training_data.fillup_y(self.y_func)
@@ -162,6 +209,8 @@ class SimulationEngine:
     def azero(self, y_matrix):
         y_sum = np.sum(y_matrix, axis=-1)
         return np.argmax(y_sum, axis=1) + 1
+=======
+>>>>>>> 65d1dc9bf416f7d43915616d9c15bf544725fe9f
 
     def export(self, desc):
         """Save the training and testing data to files.
@@ -172,5 +221,17 @@ class SimulationEngine:
         Returns:
             None
         """
+        self.training_data.fillup_x()
+        self.training_data.fillup_a()
+        self.training_data.fillup_y()
         self.training_data.export(desc + "_train.csv")
+        
+        self.testing_data.fillup_x()
         self.testing_data.export(desc + "_test_X.csv")
+        
+        test_ys_df = pd.DataFrame(self.testing_data.ys.reshape(self.testing_size, -1),
+                                  columns=self.testing_data.get_testcol())
+        #test_ys_df['A'] = self.testing_data.act
+        test_ys_df['A0'] = self.testing_data.azero
+        test_ys_df.to_csv(desc + "_test_Ys.csv", index_label="SubID")
+        

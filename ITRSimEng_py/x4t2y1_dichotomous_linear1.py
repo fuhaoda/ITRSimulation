@@ -1,16 +1,16 @@
+"""
+This is an implecation of the simulation setting of "improve numerical stability" of
+"Estimating optimal treatment regimes via sbugroup identification in randomized contro trials and observational studies"
+
+"""
 import sys
 from ITRSimpy import *
 
-
-# This is an example of using ITR Simulation Engine
-# The current a_func is a linear model of X and the y_func is a linear model of X and A
-# User can define customized a_func and y_func
-
 TRAINING_SIZE = 500
 TESTING_SIZE = 50000
-NUMBER_ACT = 2
-Y_DIMENSION = 2
-OUTPUT_PREFIX = "case_cpp"
+NUMBER_RESPONSE = 2
+Y_DIMENSION = 1
+OUTPUT_PREFIX = "001_x4t2y1_dichotomous_linear1"
 
 class CaseDataGenerator(DataGenerator):
     """
@@ -30,9 +30,9 @@ def x_func(sample_size, dg):
     # User can also change the title of the X matrix
     cont_array = dg.generate('cont', sample_size, dim=4, low=0, high=1)
     cont_title = [f"X_Cont{i}" for i in range(cont_array.shape[1])]
-    ord_array = dg.generate('ord', sample_size, dim=2, low=0, high=1)
+    ord_array = dg.generate('ord', sample_size, dim=0, low=0, high=1)
     ord_title = [f"X_Odd{i}" for i in range(ord_array.shape[1])]
-    nom_array = dg.generate('nom', sample_size, dim=1, low=0, high=1)
+    nom_array = dg.generate('nom', sample_size, dim=0, low=0, high=1)
     nom_title = [f"X_Nom{i}" for i in range(nom_array.shape[1])]
 
     x_array = np.column_stack([cont_array, ord_array, nom_array])
@@ -50,34 +50,28 @@ def x_func(sample_size, dg):
 
 def a_func(x, n_act):
     """
-    Users define the function of A here. The example below uses a linear function:
-        A = -2.5 + 3*X0 + 0*X1 + 1*X2 + 1*X3 + 0*X4 + 0*X5
+    randomly assigned with p=0.5
 
     :param x: the input X matrix for the a_function
     :param n_act: the number of possible responses, i.e. treatment options
-    :return: a n x 1 matrix of A (starging from 1)
+    :return: a n x 1 matrix of A
     """
-    beta_a = [-2.5, 3, 0, 1, 1, 0, 0]
-    z = np.matmul(x, np.array(beta_a).reshape(-1, 1))
-    p = 1 / (1 + np.exp(-z))
+    p = 0.5*np.ones((x.shape[0],1))
     a = np.random.binomial(n_act - 1, p) + 1
     return a.reshape(-1, 1)
 
 
 def y_func(x, a, ydim):
     """
-    Users define the function of Y here. The example below uses two linear functions to calculate
-    the two dimension of Y:
-        Y = A + (A-1.5)*[X2>0.7 && X4==0] + 2*X1 + rnorm
+    Y = beta_0 + sign(X_2-0.5) + A*1{X_1<=0.6} +(1-A)*1{X_1>0.6}
     :param x: the input X matrix for the a_function
     :param a: a n x 1 matrix of A
     :return:
     """
-
-    y = a + \
-        np.multiply((a - 1.5), np.logical_and(x[:, [1]] > 0.7, x[:, [3]] == 0)) + \
-        np.multiply(2, x[:, [0]]) + \
-        np.random.randn(x.shape[0], ydim)
+    beta_0 = 5*np.ones((x.shape[0],1))
+    y = beta_0 + np.sign(x[:,1] - 0.5).reshape(-1,1) + \
+        np.multiply((a-1), (x[:,0] <= 0.6).reshape(-1,1)) + \
+        np.multiply((2-a), (x[:,0] > 0.6).reshape(-1,1))
     return y
 
 
@@ -93,7 +87,7 @@ def main():
                          y_func=y_func,
                          training_size=TRAINING_SIZE,
                          testing_size=TESTING_SIZE,
-                         n_act=NUMBER_ACT,
+                         n_act=NUMBER_RESPONSE,
                          ydim=Y_DIMENSION,
                          generator=g)
     s.generate()
