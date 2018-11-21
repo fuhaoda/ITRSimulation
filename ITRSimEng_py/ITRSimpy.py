@@ -191,3 +191,16 @@ class SimulationEngine:
         self.testing_data.reset_df()
         self.testing_data.fillup_ys()
         self.testing_data.export(desc + "_test_Ys.csv")
+    
+    def print_training_data(self, nrow=10):
+        self.training_data.reset_df()
+        self.training_data.fillup_x()
+        self.training_data.fillup_a()
+        self.training_data.fillup_y()
+        print(self.training_data.df[0:min(nrow, 20)])
+        
+    def print_testing_data(self, nrow=10):
+        self.testing_data.reset_df()
+        self.testing_data.fillup_x()
+        self.testing_data.fillup_ys()
+        print(self.testing_data.df[0:min(nrow, 20)])
