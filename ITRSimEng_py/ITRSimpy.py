@@ -128,6 +128,9 @@ class ITRDataTable:
 
         self.df.index.name = 'SubID'
         self.df.to_csv(fname)
+        
+    def reset_df(self):
+        self.df = None
 
 class SimulationEngine:
     """Create training and testing tests for ITR
@@ -185,8 +188,6 @@ class SimulationEngine:
         self.testing_data.fillup_x()
         self.testing_data.export(desc + "_test_X.csv")
         
-        test_ys_df = pd.DataFrame(self.testing_data.ys.reshape(self.testing_size, -1),
-                                  columns=self.testing_data.get_testcol())
-        #test_ys_df['A'] = self.testing_data.act
-        test_ys_df['A0'] = self.testing_data.azero
-        test_ys_df.to_csv(desc + "_test_Ys.csv", index_label="SubID")
+        self.testing_data.reset_df()
+        self.testing_data.fillup_ys()
+        self.testing_data.export(desc + "_test_Ys.csv")
