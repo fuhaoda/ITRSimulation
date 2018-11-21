@@ -14,7 +14,8 @@ OUTPUT_PREFIX = "case_cpp"
 
 class CaseDataGenerator(DataGenerator):
     """
-    Define the Generator for each case, redefine the generate function if needed (like constrained on a donut-shape space)
+    Define the Generator for each case, keep the same seed for all the random data generating procedure.
+    Add more functions if needed in generating random numbers
     """
     pass
 
@@ -98,6 +99,9 @@ def main():
                          generator=g)
     s.generate()
     s.export(OUTPUT_PREFIX)
+    #s.print_training_data(15)
+    #s.print_testing_data(15)
+
 
 
 if __name__ == "__main__":

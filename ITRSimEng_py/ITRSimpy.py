@@ -39,15 +39,19 @@ class ITRDataTable:
         n_cont: Number of continuous variables
         n_ord:  Number of ordinal variables
         n_nom:  Number of nominal variables
-        n_act: Number of responses
+        n_act:  Number of treatments
+        ydim:   Dimension of the response variable Y 
         df:     Data frame holding the content of the table
+        y:      Observed Response based on the randomly assigned treatment
+        ys:     Responses for each possible treatment
+        azero:  Optimal treatment based on the summation of ys
     """
 
-    def __init__(self, sample_size, n_act, ydim, engine):
+    def __init__(self, sample_size, n_act, ydim, generator):
         self.sample_size = sample_size
         self.n_act = n_act
         self.ydim = ydim
-        self.engine = engine
+        self.generator = generator
         self.df = None
         self.x = None
         self.x_title = None
@@ -57,38 +61,33 @@ class ITRDataTable:
         self.azero = None
         
     def gen_x(self, x_func):
-        self.x_title, self.x = x_func(self.sample_size, self.engine)
+        """Generate data using the provided data generator
+        """
+        self.x_title, self.x = x_func(self.sample_size, self.generator)
         
     def fillup_x(self):
-        """Generate data using the provided data generator
-        Parameters:
-        Returns:
-            None
+        """Fill up the dataframe with x
         """
         assert not np.all(self.x == None)
         self.df = pd.DataFrame(self.x, columns=self.x_title)
     
     def gen_a(self, a_func):
-        self.act = a_func(self.x, self.n_act, self.engine)
-
-    def fillup_a(self):
-        """Fill up A according to the indicated model parameters (beta) and number of treatment options (n)
-        :param beta: (list) The model parameter to generate A from X, should be the same dimension of X
-        :return: None
+        """Generate A given X using the provided data generator. A starts from 1
         """
+        self.act = a_func(self.x, self.n_act, self.generator)
+
+    def fillup_a(self):        
         assert not np.all(self.act == None)
         self.df.insert(loc=0, column='Trt', value=self.act.flatten())
         
     def gen_y(self, y_func):
+        """Generate Y given X and A using the provided data generator
+        """
         assert not np.all(self.x == None)
         assert not np.all(self.act == None)
-        self.y = y_func(self.x, self.act, self.ydim, self.engine)
+        self.y = y_func(self.x, self.act, self.ydim, self.generator)
         
     def fillup_y(self):
-        """
-        :param y_func:
-        :return:
-        """
         assert self.ydim == self.y.shape[1]
         if self.y.shape[1] == 1:
             self.df.insert(loc=0, column="Y", value=self.y[:, 0])
@@ -103,19 +102,18 @@ class ITRDataTable:
             return [f"Y({act})_{ndim}" for act in range(1, self.n_act + 1) for ndim in range(self.ydim)]
     
     def gen_ys(self, y_func):
+        """Generate ys given each possible treatment
+        """
         y_matrix = np.zeros((self.sample_size, self.n_act, self.ydim))
         for trt in range(1, self.n_act + 1):
             y_matrix[:, trt - 1] = y_func(self.x,
                                                np.ones(self.sample_size).reshape(-1, 1) * trt,
-                                               self.ydim, self.engine)
+                                               self.ydim, self.generator)
         y_sum = np.sum(y_matrix, axis=-1)
         self.azero = np.argmax(y_sum, axis=1) + 1
         self.ys = y_matrix
         
     def fillup_ys(self):
-        """
-        Fill up ys of all the treatment. Used for test dataset
-        """
         test_ys_df = pd.DataFrame(self.ys.reshape(self.sample_size, -1),
                                   columns=self.get_testcol())
         #test_ys_df['A'] = self.act
@@ -124,13 +122,14 @@ class ITRDataTable:
         
     
     def export(self, fname):
-        """Save the data table to the specified file name"""
-
+        """Save the data table to the specified file name
+        """
         self.df.index.name = 'SubID'
         self.df.to_csv(fname)
         
     def reset_df(self):
         self.df = None
+
 
 class SimulationEngine:
     """Create training and testing tests for ITR

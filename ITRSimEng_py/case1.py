@@ -95,7 +95,7 @@ def main():
     :return:
     """
 
-    g = DataGenerator(seed=1)
+    g = CaseDataGenerator(seed=1)
     s = SimulationEngine(x_func=x_func,
                          a_func=a_func,
                          y_func=y_func,
@@ -106,6 +106,8 @@ def main():
                          generator=g)
     s.generate()
     s.export(OUTPUT_PREFIX)
+    #s.print_training_data(15)
+    #s.print_testing_data(15)
 
 if __name__ == "__main__":
     main()
