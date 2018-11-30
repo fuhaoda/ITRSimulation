@@ -48,7 +48,7 @@ def x_func(sample_size, dg):
     return x_title, x_array
 
 
-def a_func(x, n_act):
+def a_func(x, n_act, dg):
     """
     randomly assigned with p=0.5
 
@@ -61,7 +61,7 @@ def a_func(x, n_act):
     return a.reshape(-1, 1)
 
 
-def y_func(x, a, ydim):
+def y_func(x, a, ydim, dg):
     """
     Y = beta_0 + sign(X_2-0.5) + A*1{X_1<=0.6} +(1-A)*1{X_1>0.6}
     :param x: the input X matrix for the a_function

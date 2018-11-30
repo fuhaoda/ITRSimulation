@@ -59,7 +59,7 @@ def x_func(sample_size, dg):
     return x_title, x_array
 
 
-def a_func(x, n_act):
+def a_func(x, n_act, dg):
     """
 
     :param x: the input X matrix for the a_function
@@ -74,7 +74,7 @@ def a_func(x, n_act):
     return a.reshape(-1, 1)
 
 
-def y_func(x, a, ydim):
+def y_func(x, a, ydim, dg):
     """
     Treatment a coded as 1/2
     """

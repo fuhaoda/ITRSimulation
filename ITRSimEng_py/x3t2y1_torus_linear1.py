@@ -56,7 +56,7 @@ def x_func(sample_size, dg):
     return x_title, x_array
 
 
-def a_func(x, n_act):
+def a_func(x, n_act, dg):
     """
     randomly assigned with p=0.5
 
@@ -102,7 +102,7 @@ def d(x, a):
         theta * np.multiply((2-a), cond > r**2)
     return d
 
-def y_func(x, a, ydim):
+def y_func(x, a, ydim, dg):
     """
     :param beta: intercept
     """
