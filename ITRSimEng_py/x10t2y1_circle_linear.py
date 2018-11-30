@@ -1,6 +1,6 @@
 
 import sys
-from ITRSimpy import *
+from ITRSimpy_3 import *
 
 
 # Simulaiton setting 2 in the reference 
@@ -51,25 +51,27 @@ def x_func(sample_size, dg):
     return x_title, x_array
 
 
-def a_func(x, n_act):
+def a_func(x, n_act, dg):
     """
     Users define the function of A here. 
     A takes 1 and -1 with probability 0.5
     """
-    p = np.ones((x.shape[0],1)) 
-    a = 2*np.random.binomial(n_act - 1, p) - 1
+    p = 0.5*np.ones((x.shape[0],1)) 
+    
+    a = 2*dg.binomial(n_act - 1, p) - 1
     return a.reshape(-1, 1)
 
 
 
-def y_func(x, a, ydim):
+def y_func(x, a, ydim, dg):
     """
     Users define the function of Y here. 
     Y = 1-2X1 + X2 -X3 + 8(1-X1^2-X2^2)A
     
     """
     y = 1 - np.multiply(2,x[:, [0]])+ x[:, [1]] - x[:, [2]] + 8*np.multiply(1-np.power(x[:, [0]],2)-np.power(x[:, [1]],2),a) + \
-        np.random.randn(x.shape[0], ydim)
+         dg.randn(x.shape[0], ydim)
+        
     return y
 
 
