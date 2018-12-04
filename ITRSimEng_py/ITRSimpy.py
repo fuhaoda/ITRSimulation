@@ -30,7 +30,10 @@ class DataGenerator:
 
     def randn(self, sample_size, dim=1):
         return self.state.randn(sample_size, dim)
-
+    
+    def uniform(self, low=0, high=1, size=None):
+        return self.state.uniform(low, high, size)
+    
 
 class ITRDataTable:
     """A data table of covariates, actions, and responses for ITR.
