@@ -72,7 +72,8 @@ class ITRDataTable:
         """Fill up the dataframe with x
         """
         assert not np.all(self.x == None)
-        self.df = pd.DataFrame(self.x, columns=self.x_title)
+        x_df = pd.DataFrame(self.x, columns=self.x_title)
+        self.df = pd.concat([self.df, x_df], axis=1)
     
     def gen_a(self, a_func):
         """Generate A given X using the provided data generator. A starts from 1
@@ -112,16 +113,29 @@ class ITRDataTable:
             y_matrix[:, trt - 1] = y_func(self.x,
                                                np.ones(self.sample_size).reshape(-1, 1) * trt,
                                                self.ydim, self.generator)
-        y_sum = np.sum(y_matrix, axis=-1)
-        self.azero = np.argmax(y_sum, axis=1) + 1
         self.ys = y_matrix
-        
+    
+    def gen_azero(self, ytotal_func):
+        assert not np.all(self.ys == None)
+        if ytotal_func == None:
+            y_sum = np.sum(self.ys, axis=-1) # simply sum up all the dim of y to get a total score.
+            self.azero = np.argmax(y_sum, axis=1) + 1
+        else:
+            y_total = np.zeros(self.ys.shape[0:2])
+            for n in range(y_total.shape[0]):
+                for trt in range(y_total.shape[1]):
+                    y_total[n, trt] = ytotal_func(self.ys[n, trt, :])
+            self.azero = np.argmax(y_total, axis=1) + 1
+            
+            
     def fillup_ys(self):
         test_ys_df = pd.DataFrame(self.ys.reshape(self.sample_size, -1),
                                   columns=self.get_testcol())
         #test_ys_df['A'] = self.act
-        test_ys_df['A0'] = self.azero
         self.df = pd.concat([self.df, test_ys_df], axis=1)
+        
+    def fillup_azero(self):
+        self.df.insert(loc=self.df.shape[1], column="A_0", value=self.azero )
         
     
     def export(self, fname):
@@ -148,17 +162,18 @@ class SimulationEngine:
     """
 
     def __init__(self, x_func, a_func, y_func, generator, n_act, ydim,
-                 training_size=500, testing_size=50000):
+                 training_size=500, testing_size=50000, ytotal_func=None):
         self.x_func = x_func
         self.a_func = a_func
         self.y_func = y_func
+        self.ytotal_func = ytotal_func
         self.generator = generator
         self.n_act = n_act
         self.ydim = ydim
         self.testing_size = testing_size
         self.training_data = ITRDataTable(training_size, n_act, ydim, generator)
         self.testing_data = ITRDataTable(testing_size, n_act, ydim, generator)
-
+        
 
     def generate(self):
         """Generate training and testing data using the specified generator
@@ -173,6 +188,7 @@ class SimulationEngine:
         
         self.testing_data.gen_x(self.x_func)
         self.testing_data.gen_ys(self.y_func)
+        self.testing_data.gen_azero(self.ytotal_func)
 
 
     def export(self, desc):
@@ -192,6 +208,7 @@ class SimulationEngine:
         
         self.testing_data.reset_df()
         self.testing_data.fillup_ys()
+        self.testing_data.fillup_azero()
         self.testing_data.export(desc + "_test_Ys.csv")
     
     def print_training_data(self, nrow=10):
@@ -205,4 +222,5 @@ class SimulationEngine:
         self.testing_data.reset_df()
         self.testing_data.fillup_x()
         self.testing_data.fillup_ys()
+        self.testing_data.fillup_azero()
         print(self.testing_data.df[0:min(nrow, 20)])

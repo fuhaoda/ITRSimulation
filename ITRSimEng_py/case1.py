@@ -88,6 +88,8 @@ def y_func(x, a, ydim, dg):
         dg.randn(x.shape[0], ydim)
     return y
 
+def ytotal_func(y):
+    return(y[0]+99*y[1])
 
 def main():
     """
@@ -103,7 +105,8 @@ def main():
                          testing_size=TESTING_SIZE,
                          n_act=NUMBER_ACT,
                          ydim=Y_DIMENSION,
-                         generator=g)
+                         generator=g,
+                         ytotal_func=ytotal_func)
     s.generate()
     s.export(OUTPUT_PREFIX)
     #s.print_training_data(15)
