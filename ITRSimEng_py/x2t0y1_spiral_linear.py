@@ -1,22 +1,27 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[5]:
+
+"""
+@ author: Yubai Yuan   
+"""
 
 import sys
 import math
 from ITRSimpy import *
 
 TRAINING_SIZE = 500
-TESTING_SIZE = 500
+TESTING_SIZE = 50000
 NUMBER_RESPONSE = 2
 Y_DIMENSION = 1
+
+
 OUTPUT_PREFIX = "x2t0y1_spiral_linear"
 
 class CaseDataGenerator(DataGenerator):
     """
-    Define the Generator for each case, keep the same seed for all the random data generating procedure.
-    Add more functions if needed in generating random numbers
+    Define the Generator for each case, redefine the generate function if needed 
     """
     pass
 
@@ -53,8 +58,8 @@ def x_func(sample_size, dg):
 
 def a_func(x, n_act, dg):
   
-    x1 = np.array(x)[1]
-    p = 0.5*np.ones((x1.shape[0],1)) 
+    m = np.array(x).shape[0]
+    p = 0.5*np.ones((m,1)) 
     a = 2*dg.binomial(n_act - 1, p) - 1
     return a.reshape(-1, 1)
 
@@ -83,7 +88,7 @@ def calculate_radius(x):
 
 def y_func(x, a, ydim, dg):
 
-    x1 = pd.DataFrame(data=x[1])
+    x1 = pd.DataFrame(data=x)
     theta = x1.apply(calculate_theta,axis=1)
     radius = x1.apply(calculate_radius,axis=1)
     
@@ -100,20 +105,19 @@ def y_func(x, a, ydim, dg):
       b_2 = np.where((a_2>0.1)*(a_2<2))[0]
       index_2 =   np.append(index_2,b_2)
     
-    y = np.zeros((x[1].shape[0],ydim))
+    y = np.zeros((x1.shape[0],ydim))
     y[index_1] = 1
     y[index_2] = -1
     y = y*a
     
     return y
 
-
 def main():
     """
     :return:
     """
 
-    g = DataGenerator(seed=1)
+    dg = DataGenerator(seed=1)
     s = SimulationEngine(x_func=x_func,
                          a_func=a_func,
                          y_func=y_func,
@@ -121,12 +125,15 @@ def main():
                          testing_size=TESTING_SIZE,
                          n_act=NUMBER_RESPONSE,
                          ydim=Y_DIMENSION,
-                         generator=g)
+                         generator=dg)
     s.generate()
     s.export(OUTPUT_PREFIX)
-
-
-
+        
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
 
