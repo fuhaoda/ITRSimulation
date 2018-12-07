@@ -287,14 +287,14 @@ k^{-1} \sum_{a=1}^k \left\{\sum_{i=1}^{N} I(A^o_i=a)\right\}^{-1} \sum_{i=1}^{N}
 \section*{Simulation Settings and True Parameters (Confidential)} \label{sec.SimSettings}
 
 \subsection*{x4t2y1\_dichotomous\_linear1}
-Implement the simulation setting described in the "Improve numerical stability" part of \cite{fu2016estimating}. The dimension of $X$ is 4 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability as 0.5. The response Y is generated from the following model:
+This implements the simulation setting described in the "Improve numerical stability" part of \cite{fu2016estimating}. The dimension of $X$ is 4 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability as 0.5. The response Y is generated from the following model:
 \begin{equation*}
 Y=\beta_0+\text{sign}(X_2-0.5)+(A-1)\cdot I_{X_1\le 0.6}+(2-T)\cdot I_{X_1>0.6},
 \end{equation*} 
 where $\beta_0$ is an arbitrary number, default as 5.
 
 \subsection*{x4t2y1\_dichotomous\_linear2}
-Implement the simulation setting described in the "Convergence in RCTs" part of \cite{fu2016estimating}. The dimension of $X$ is 4 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability as 0.5. The response Y is generated from the following model:
+This implements the simulation setting described in the "Convergence in RCTs" part of \cite{fu2016estimating}. The dimension of $X$ is 4 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability as 0.5. The response Y is generated from the following model:
 \begin{equation*}
 Y=\text{sign}(X_2-0.5)+\theta\cdot (A-1) \cdot I_{X\in D} + \theta \cdot(2-A) \cdot I_{X\in D^C}+\epsilon,
 \end{equation*}
@@ -307,7 +307,7 @@ where $\epsilon$ is i.i.d. $N(0,1)$. The true subgroup $D$ is defined by differe
 $\theta$ is used to change the signal-noise ratio, ranging from 0.1 to 0.5, default as 0.3.
 
 \subsection*{x5t2y1\_dichotomous\_linear1}
-Implement the simulation setting described in the "Convergence in observational studies" part of \cite{fu2016estimating}. The dimension of $X$ is 5 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability from the following model:
+This mplements the simulation setting described in the "Convergence in observational studies" part of \cite{fu2016estimating}. The dimension of $X$ is 5 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability from the following model:
 \begin{equation*}
 \text{logit}(p)=-0.5b+bX_i,
 \end{equation*} 
@@ -318,14 +318,14 @@ Y=1+2\cdot X_2+\theta \cdot (A-1)\cdot I_{X_1>0.5}+\theta \cdot (2-A)\cdot I_{X_
 where $\epsilon$ is i.i.d. $N(0,1)$, $\theta$ is 0.5 by default.
 
 \subsection*{x10t2y1\_dichotomous\_linear}
-Implement the simulation setting described in the "Variable importance" part of \cite{fu2016estimating}. The dimension of $X$ is 10 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model:
+This implements the simulation settings described in the "Variable importance" part of \cite{fu2016estimating}. The dimension of $X$ is 10 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model:
 \begin{equation*}
 Y=\text{sign}(X_2-0.5)+0.5(A-1)\cdot I_{X\in D}+0.5\cdot(2-A)\cdot I_{X\in D^C}+\epsilon,
 \end{equation*}
 where $\epsilon$ is i.i.d. $N(0,1)$, $A={X:X_4\le 0.7\cap X_6 \le 0.7}$.
 
-\subsection*{x3t2y1\_torus\_linear1}
-$X\in \mathbb{R^3}$, and each covariate is generated from a uniform distribution $U(-1,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model:
+\subsection*{x3t2y1\_torus\_linear}
+$X\in \mathbb{R}^3$, and each covariate is generated from a uniform distribution $U(-1,1)$. The treatment $A$ is a binary random variable coded as 1 and 2. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model:
 \begin{equation*}
 Y= \beta + 3\cdot X_3 + 0.3 \cdot (A-1) + 0.2 \cdot (2-A) +
 	\theta \cdot (A-1)\cdot I_{X\in D} + \theta \cdot (2-A) \cdot I_{X\in D^C}+\epsilon,
@@ -335,21 +335,44 @@ where $\epsilon$ is i.i.d. $N(0,1)$. $\beta, \theta$ are 1 and 0.8 by default. $
 (\sqrt{X_1^2+X_2^2}-R)^2+X_3^2\le r^2,
 \end{equation*}
 where $R$ and $r$ are the major radius and minor radius of the torus respectively. The shape of the torus is illustrated below:
-%\begin{figure}
-%	\centering
-%	\includegraphics[width=0.7\linewidth]{donut_shape}
-%	\caption{Illustration of a torus in $\mathbb{R}^3$. The blue and red dots denote the two true subgroups of $X$}
-%\end{figure}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\linewidth]{donut_shape}
+	\caption{Illustration of a torus in $\mathbb{R}^3$. The blue and red dots denote the two true subgroups of $X$}
+\end{figure}
+
+
+
+
+\subsection*{x11t2y1\_complex\_logit}
+This implements the simulation settings described in \cite{xu2015regularized}. The data contains 5 binary covariates $X_1$ to$ X_5$, 5 ordinal covariates $X_6$ to $X_{10}$ and 1 continuous covariate$X_{11}$. The binary variables are generated by Bernoulli distribution with successful probability of 1/2. All ordinal covariates have 4 uniformly distribution levels. The continuous covariate is simulated form the standard normal distribution. The treatment A is independent of the covariates and takes value of 1 and 2 with equal probability. The binary response $Y$ is generated using logit as link function. The last letter in the file name corresponds to the case label in the original paper which indicates different model to generate the response Y. The detailed formulas for logit$P(Y=1)$ are described in the following:
+\begin{enumerate}
+	\item [A.] $0.5\cdot I_{X_3=1}+2(I_{X_2=1}+I_{X_6=3}\cdot I_{X_1=1})\cdot (2A-3)$;
+	\item[D.] $\log \log (I_{X_7=3}+I_{X_8=3} +5(I_{X_6=2} + I_{X_1=1,X_2=1})\cdot(2A-3)+20)^2$;
+	\item[F.] $0.5I_{X_1=1}+0.5I_{X_2=1}+2I_{X_{11}<5, X_6<2}\cdot(2A-3)$.
+\end{enumerate}
+The term $(2A-3)$ transforms the label of $A$ from 1/2 to -1/1.
+
+\subsection*{x4t2y1\_discrete\_linear}
+This implements the simulation settings described in \cite{su2009subgroup}. Each set contains 4 covariates $X_1$ to $X_4$ simulated from a discrete uniform distribution over (0.02, 0.04, ..., 1.00). The treatment A is independent of the covariates and takes value of 1 and 2 with equal probability. The continuous response $Y$ is generated based on different models which are described below:
+\begin{enumerate}
+	\item [B.] $Y=2+2\cdot (A-1) +2Z_1+2Z_2 +2\cdot (A-1)\cdot Z_1 Z_2 +\epsilon,\quad \epsilon\sim N(0,1)$;
+	\item [D.] $Y=10+10\cdot (A-1)\cdot \text{exp}\{(X_1-0.5)^2+(X_2-0.5)^2\} + \epsilon, \quad \epsilon\sim N(0,1)$;
+	\item [E.] $Y=2+2\cdot (A-1) +2Z_1+2Z_2 +2\cdot (A-1)\cdot Z_1 + 2\cdot (A-1)\cdot Z_2 +\epsilon,\quad \epsilon\sim Unif(-\sqrt{3},\sqrt{3})$;
+	\item [F.] $Y=2+2\cdot (A-1) +2Z_1+2Z_2 +2\cdot (A-1)\cdot Z_1 + 2\cdot (A-1)\cdot Z_2 +\epsilon,\quad \epsilon\sim exp(1)$.
+\end{enumerate}
+The term $A-1$ transforms the label of $A$ from 1/2 to 0/1 and $Z_1=I_{X_1\le 0.5},~Z_2=I_{X_2\le 0.5}$
+
 
 \subsection*{x10t2y1\_plane\_linear}
-Implement the simulation setting 1 described in the "Learning Optimal Personalized Treatment Rules in Consideration of Benefit and Risk: with an Application to Treating Type 2 Diabetes Patients with Insulin Therapies". The dimension of $X$ is 10 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as -1 and 1. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model: 
+Implement the simulation setting 1 described in \cite{wang2018learning}. The dimension of $X$ is 10 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as -1 and 1. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model: 
 \begin{align*}
 Y = 1 -2X_1 + X_2 -X_3 + 2(1-X_1-X_2)A + \epsilon_Y,
 \end{align*}
 where $\epsilon$ is i.i.d. $N(0,1)$.
 
 \subsection*{x10t2y1\_circle\_linear}
-Implement the simulation setting 2 described in the "Learning Optimal Personalized Treatment Rules in Consideration of Benefit and Risk: with an Application to Treating Type 2 Diabetes Patients with Insulin Therapies". The dimension of $X$ is 10 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as -1 and 1. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model: 
+Implement the simulation setting 2 described in \cite{wang2018learning}. The dimension of $X$ is 10 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as -1 and 1. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model: 
 \begin{align*}
 Y = 1 -2X_1 + X_2 -X_3 + 8(1-X_1^2-X_2^2)A + \epsilon_Y,
 \end{align*}
@@ -357,7 +380,7 @@ where $\epsilon$ is i.i.d. $N(0,1)$.
 
 
 \subsection*{x4t2y1\_checkboard\_linear}
-Implement the motivation example about checkboard described in the "reinforcement learning tree". The dimension of $X$ is 4 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as -1 and 1. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model: 
+Implement the motivation example about checkboard described in \cite{zhu2015reinforcement}. The dimension of $X$ is 4 and each covariate is generated from a uniform distribution $U(0,1)$. The treatment $A$ is a binary random variable coded as -1 and 1. It is randomly assigned with a probability of 0.5. The response $Y$ is generated from the following model: 
 \begin{align*}
 &Y = A\times (I_{X\in D_1}-I_{X\in D_1}) , \\
 &D_1 = \big\{X|\{X_1<1/3\}\cap\{ X_1>2/3\} \big\}, \\
@@ -373,6 +396,11 @@ The response $Y$ is generated from the following model:
 &D_1 = \big\{X|0.1\leq r - 1.5(\theta+(2k+0.5)\pi)\leq 2,\;k=0,1,2 \big\}, \\
 &D_2 = \big\{X|0.1\leq r - 1.5(\theta+(2k+1.5)\pi)\leq 2,\;k=0,1,2 \big\}.
 \end{align*}
+
+\subsection*{x10t2y1\_cox\_circle}
+Implement the Cox model with circle subgroup structure. The dimension of $X$ is 10 and each covariate is generated from a uniform distribution $U(0,1)$. The dimension of truly associated covariates is 4. The treatment $A$ is a binary random variable coded as -1 and 1. It is randomly assigned with a probability of 0.5. The survival time $T$ is generated as following: we set the constant baseline hazard as 1.
+$$T \sim \exp(1 -2X_1 + X_2 -X_3 + 8(1-X_1^2-X_2^2)A )$$
+ 
 
 
 
