@@ -65,7 +65,7 @@ def a_func(x, n_act, dg):
     :return: a n x 1 matrix of A
     """
     p = 0.5 * np.ones((x.shape[0],1))
-    a = np.random.binomial(n_act - 1, p) + 1
+    a = dg.binomial(n_act - 1, p) + 1
     return a.reshape(-1, 1)
 
 def g(x):

@@ -64,7 +64,7 @@ def a_func(x, n_act):
     A takes 1 and -1 with probability 0.5
     """
     p = np.ones((x.shape[0],1)) 
-    a = 2*np.random.binomial(n_act - 1, p) - 1
+    a = 2*dg.binomial(n_act - 1, p) - 1
     return a.reshape(-1, 1)
 
 

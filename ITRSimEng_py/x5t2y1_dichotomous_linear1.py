@@ -70,7 +70,7 @@ def a_func(x, n_act, dg):
     i = 1 # the related column of x in determining p
     z = -0.5 * b + b * x[:, i-1]
     p = 1 / (1 + np.exp(-z))
-    a = np.random.binomial(n_act - 1, p) + 1
+    a = dg.binomial(n_act - 1, p) + 1
     return a.reshape(-1, 1)
 
 

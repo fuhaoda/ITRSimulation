@@ -1,8 +1,4 @@
 
-# coding: utf-8
-
-# In[5]:
-
 """
 @ author: Yubai Yuan   
 """
@@ -17,7 +13,7 @@ NUMBER_RESPONSE = 2
 Y_DIMENSION = 1
 
 
-OUTPUT_PREFIX = "x2t0y1_spiral_linear"
+OUTPUT_PREFIX = "x2t2y1_spiral_linear"
 
 class CaseDataGenerator(DataGenerator):
     """
