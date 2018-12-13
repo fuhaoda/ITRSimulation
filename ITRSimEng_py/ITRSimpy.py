@@ -25,8 +25,8 @@ class DataGenerator:
         else:
             return None
     
-    def binomial(self, n, p_vector):
-        return self.state.binomial(n, p_vector)
+    def binomial(self, n, p, size=None):
+        return self.state.binomial(n, p, size)
 
     def randn(self, sample_size, dim=1):
         return self.state.randn(sample_size, dim)

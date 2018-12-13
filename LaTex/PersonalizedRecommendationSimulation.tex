@@ -10,6 +10,7 @@
 \usepackage{pdfsync}
 \usepackage{natbib}
 \usepackage{caption}
+\usepackage{bm}
 \textheight 9.2 in \textwidth 6.4 in
 \topmargin -0.15 in       % for PC
 \topmargin -0.7 in       % for Unix
@@ -24,6 +25,7 @@
 \renewcommand{\theequation} {\arabic{section}.\arabic{equation}}
 \renewcommand{\thefigure}{\arabic{figure}}
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\renewcommand{\vec}{\bm}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
@@ -44,6 +46,7 @@
 \def\iid{\stackrel{ iid} {\sim}}          % i.i.d
 \def\hat{\widehat}
 \def\tilde{\widetilde}
+
 
 %general sets
 \def\cal{\mathcal}
@@ -432,6 +435,14 @@ where $\epsilon \sim N(0,0.1)$
 For $i=0,1,2$, two treatments are assigned to the patient with equal probability independently. We use $A_1A_2A_3$ to denotes the treatment sequence where $A_i\in {A,B}$. We encode all the eight probable treatments into $1,2,..8$, i.e., $1=AAA,~2=AAB,~3=ABA,~4=BAA,~5=ABB,~6=BBA,~7=BAB,~8=BBB$. So the action is eight dimensional. Besides, we define one dimensional $X=W(0)$. We also assume the survival function of the patient as an exponential distribution with mean $S(i)=3(W(i^+)+2)/(20T(i^+)),~ i=0,1,2$. We define three dimensional $Y=[S(0)~S(1)~S(2)]$ and the optimal action is chosen to maximize $\sum_{i=0}^2 S(i)$.
 
 
+\subsection*{x11t3y10\_longitudinal\_log}
+This part implement the simulation setting described in \cite{zhu2016individualizing}. For each individual, it follows a longitudinal log-linear mixed-effect model:
+\begin{equation}
+\log Y_{j} = X_{j}\beta + Z_{j}b + d\log(D_j) +\epsilon_{j}, i=1,\cdots,N,~j=1,\cdots,10,
+\end{equation}
+where $Y_{j}$ is a continuous post-treatment response of interest at time j; $A_j$ is the drug dosage at time point $j$; and $d$ is the corresponding fixed coefficient. The time-varying fixed-effect covariates $X_{j}$ are generated from $\text{Unif}(0.75,2.25)$; the fixed-effect parameters  $\beta=0.5$ and $d=1.2$; The covariate $Z_{j}$ is time-invariant ($Z_{1}=\cdots=Z_{ij}$) with $Z_{1}\sim U(0.75,2.25)$. For the generation of the random-effect $b$, half of the subjects are from $\text{Unif}(-1.5,-0.5)$, and another half from $\text{Unif}(1.5,0.5)$. For convenience, The dosage assigned is sampled from three different level (100,300,600) and assumed to be time-invariant: $D_{1}=\dots=D_{j}$. The error term $\vec{\epsilon_i}$ follows $N(\vec{0}, 0.5\vec{R})$, where $R$ is AR(1) correlation matrix with the correlation coefficient $\rho=0.8$.
+
+To keep consistent with the notation used before, we define $\vec{X}=(X_1,\cdots, X_{10},Z_1) \in \mathbb{R}^{11}$ and $\vec{Y}=(Y_1, \cdots,Y_10)\in \mathbb{R}^{10}$ for each individual. And the dosage level (100,300,600) is coded as $A=1,2,3$ respectivley. The optimal dosage  $A^0$ is chosen to maximize $\sum_{j=1}^{10} Y_j$.
 \bibliographystyle{chicago}
 \bibliography{ref_simulation}
 
