@@ -443,6 +443,21 @@ This part implement the simulation setting described in \cite{zhu2016individuali
 where $Y_{j}$ is a continuous post-treatment response of interest at time j; $A_j$ is the drug dosage at time point $j$; and $d$ is the corresponding fixed coefficient. The time-varying fixed-effect covariates $X_{j}$ are generated from $\text{Unif}(0.75,2.25)$; the fixed-effect parameters  $\beta=0.5$ and $d=1.2$; The covariate $Z_{j}$ is time-invariant ($Z_{1}=\cdots=Z_{ij}$) with $Z_{1}\sim U(0.75,2.25)$. For the generation of the random-effect $b$, half of the subjects are from $\text{Unif}(-1.5,-0.5)$, and another half from $\text{Unif}(1.5,0.5)$. For convenience, The dosage assigned is sampled from three different level (100,300,600) and assumed to be time-invariant: $D_{1}=\dots=D_{j}$. The error term $\vec{\epsilon_i}$ follows $N(\vec{0}, 0.5\vec{R})$, where $R$ is AR(1) correlation matrix with the correlation coefficient $\rho=0.8$.
 
 To keep consistent with the notation used before, we define $\vec{X}=(X_1,\cdots, X_{10},Z_1) \in \mathbb{R}^{11}$ and $\vec{Y}=(Y_1, \cdots,Y_10)\in \mathbb{R}^{10}$ for each individual. And the dosage level (100,300,600) is coded as $A=1,2,3$ respectivley. The optimal dosage  $A^0$ is chosen to maximize $\sum_{j=1}^{10} Y_j$.
+
+\subsection*{x10t3y1\_linear\_plane}
+This setting extend the case in \textbf{x10t2y1\_plane\_linear} with binary treatments to the three classes of treatments. The dimension of $X$ is 10 and each covariate is generated from a uniform distribution $U(0,1)$. The dimension of true covariates is 3. The treatment $A$ is a random variable uniformly sampled from $\{1,2,3\}$ representing three different treatments. The response $Y$ is generated from the following model: 
+\begin{align*}
+Y &= 1 -2X_1 + X_2 -X_3\\ &+ I_{\{X1+X2+X3<1.5\}}I_{\{A=1\}} + I_{\{1.5\leq X1+X2+X3<2.5\}}I_{\{A=2\}} + I_{\{X1+X2+X3\geq 2.5\}}I_{\{A=3\}}+ \epsilon_Y,
+\end{align*}
+where $\epsilon_Y$ is i.i.d. $N(0,1)$.
+
+\subsection*{x10t3y1\_linear\_circle}
+This setting extend the case in \textbf{x10t2y1\_circle\_linear} with binary treatments to the three classes of treatments. The dimension of $X$ is 10 and each covariate is generated from a uniform distribution $U(0,1)$. The dimension of true covariates is 3. The treatment $A$ is a random variable uniformly sampled from $\{1,2,3\}$ representing three different treatments. The response $Y$ is generated from the following model: 
+\begin{align*}
+Y &= 1 -2X_1 + X_2 -X_3\\ &+ I_{\{X1^2+X2^2+X3^2<1.5\}}I_{\{A=1\}} + I_{\{1.5\leq X1^2+X2^2+X3^2<2.5\}}I_{\{A=2\}} + I_{\{X1^2+X2^2+X3^2\geq 2.5\}}I_{\{A=3\}}+ \epsilon_Y,
+\end{align*}
+where $\epsilon_Y$ is i.i.d. $N(0,1)$.
+
 \bibliographystyle{chicago}
 \bibliography{ref_simulation}
 
