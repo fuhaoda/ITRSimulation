@@ -29,11 +29,12 @@ for (iter in 1:nSim) {
   rf.err <- sum(ITR.oracle != res$ITR.rf) / n
   xgboost.err <- sum(ITR.oracle != res$ITR.xgboost) / n
   resM[iter,] <- c(rf.err,xgboost.err)
-  regretM[iter,1] <- mean(t(OptM)[0:(n-1)*nMethod + ITR.oracle])- mean(t(OptM)[0:(n-1)*nMethod + res$ITR.rf])
-  regretM[iter,2] <- mean(t(OptM)[0:(n-1)*nMethod + ITR.oracle])- mean(t(OptM)[0:(n-1)*nMethod + res$ITR.xgboost])
+  regretM[iter,1] <- mean(OptM[cbind(seq(n),ITR.oracle)])- mean(OptM[cbind(seq(n),res$ITR.rf)])
+  regretM[iter,2] <- mean(OptM[cbind(seq(n),ITR.oracle)])- mean(OptM[cbind(seq(n),res$ITR.xgboost)])
 }
 
-
+print(colMeans(resM))
+print(colMeans(regretM))
 
 
 
